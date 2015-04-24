@@ -15,15 +15,15 @@ boxplot(MLL.B)
 dev.off()
 
 # Density plot
-png('figures/qa/density_plot.png', res=500)
-par(mar = c(4, 5, 0, 1))
+png('figures/qa/density_plot.png')
+par(mar = c(3, 3, 4, 1))
 plotDensity.AffyBatch(MLL.B, lwd=2, col=1:21, lty=1:21)
 legend('topright', LETTERS[1:21], col=1:21, lty=1:21, lwd=2, inset=0.1)
 dev.off()
 
-# Probe level modeling
-Pset = fitPLM(MLL.B)
-png('figures/qa/NUSE.png', width=4, height=4, units='in', res=500)
-NUSE(Pset)
-dev.off()
-
+# # Probe level modeling
+# Pset = fitPLM(MLL.B)
+# png('figures/qa/NUSE.png', width=4, height=4, units='in', res=500)
+# NUSE(Pset)
+# dev.off()
+#
