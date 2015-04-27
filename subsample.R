@@ -27,4 +27,5 @@ filtered_samples = c(no_treated, tmz_rt, rt)
 filtered_samples = paste(filtered_samples, '.cel.gz', sep='')
 
 MLL.B = ReadAffy(celfile.path = "./data", filenames=filtered_samples)
+saveRDS(MLL.B, 'MLLB.rds')
 

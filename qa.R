@@ -1,6 +1,6 @@
-source('subsample.R')
 library(affyPLM)
 
+MLL.B = readRDS('MLLB.rds')
 # Scanner plot analysis
 sampleNames(MLL.B) <- letters[1:21]
 png('figures/qa/scannerplot.png', width=4, height=4, units='in', res=500)
