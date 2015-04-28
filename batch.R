@@ -45,3 +45,17 @@ plot(cmd, type = "n")
 text(cmd, treatment, col = batch, cex = 0.9)
 legend("topleft", paste("Batch", unique(batch)), fill = unique(batch), inset = 0.01)
 
+maskNormalSamples = treatment == "Normal"
+normalSampleClustering = hclust(as.dist(1 - cor(exprs(eset[, maskNormalSamples]), 
+    method = "spearman")))
+normalSampleDendrogram = as.dendrogram(normalSampleClustering, hang = 0.1)
+normalBatch = batch[maskNormalSamples]
+normalOutcome = treatment[maskNormalSamples]
+normalSampleDendrogram = dendrapply(normalSampleDendrogram, function(x, batch, labels) {
+    ## for every node in the dendrogram if it is a leaf node
+    if (is.leaf(x)) {
+        attr(x, "nodePar") = list(lab.col = as.vector(batch[attr(x, "label")]))  ## color by batch
+        attr(x, "label") = as.vector(labels[attr(x, "label")])  ## label by outcome
+    }
+    x
+}, normalBatch, normalOutcome)
