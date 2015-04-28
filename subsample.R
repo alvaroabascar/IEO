@@ -2,11 +2,11 @@ library(affy)
 library(Biobase)
 library(GEOquery)
 
-if (file.exists('eset.rds')) {
-  eset = readRDS('eset.rds')
+if (file.exists('full_eset.rds')) {
+  eset = readRDS('full_eset.rds')
 } else {
   eset = getGEO(filename='GSE7696_series_matrix.txt.gz')
-  saveRDS(eset, 'eset.rds')
+  saveRDS(eset, 'full_eset.rds')
 }
 
 pData = pData(eset)
@@ -24,8 +24,11 @@ tmz_rt = sample(tmz_rt, size=13)
 rt = sample(rt, size=7)
 
 filtered_samples = c(no_treated, tmz_rt, rt)
-filtered_samples = paste(filtered_samples, '.cel.gz', sep='')
+filtered_samples_fullnames = paste(filtered_samples, '.cel.gz', sep='')
 
-MLL.B = ReadAffy(celfile.path = "./data", filenames=filtered_samples)
+MLL.B = ReadAffy(celfile.path = "./data", filenames=filtered_samples_fullnames)
+filteredeset = eset[, filtered_samples]
+
+saveRDS(filteredeset, 'eset.rds')
 saveRDS(MLL.B, 'MLLB.rds')
 
