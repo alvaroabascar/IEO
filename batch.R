@@ -6,7 +6,8 @@ library(corpcor)
 # eset = readRDS('full_eset.rds')
 MLL.B = readRDS('MLLB.rds')
 eset = readRDS('eset.rds')
-sampleNames(MLL.B) = letters[1:21]
+names = as.character(c(1:length(sampleNames(MLL.B))))
+sampleNames(MLL.B) = namesnames
 
 scanDate = protocolData(MLL.B)$ScanDate
 scanDate = gsub(" .*", "", scanDate)
