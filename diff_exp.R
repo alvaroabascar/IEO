@@ -6,7 +6,8 @@ library(sva)
 
 MLL.B = readRDS('MLLB.rds')
 eset = readRDS('eset.rds')
-sampleNames(MLL.B) = letters[1:21]
+names = as.character(c(1:length(sampleNames(MLL.B))))
+sampleNames(MLL.B) = names
 
 # Load the two different survival groups & plot the log fold-changes between means:
 zeroExp <- rowMeans(exprs(eset[, eset$characteristics_ch1.6 == "survival status: 0"]))
