@@ -30,6 +30,6 @@ if (file.exists('full_eset.rds')) {
 # filteredeset = eset[, filtered_samples]
 MLL.B = ReadAffy(celfile.path = "./data")
 
-saveRDS(filteredeset, 'eset.rds')
+saveRDS(eset, 'eset.rds')
 saveRDS(MLL.B, 'MLLB.rds')
 
