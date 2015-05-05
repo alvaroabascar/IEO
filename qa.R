@@ -1,7 +1,8 @@
 library(affyPLM)
 
 MLL.B = readRDS('MLLB.rds')
-sampleNames(MLL.B) = letters[1:21]
+names = as.character(c(1:length(sampleNames(MLL.B))))
+sampleNames(MLL.B) = names
 
 # Scanner plot analysis
 png('figures/qa/scannerplot.png', width=4, height=4, units='in', res=500)
@@ -18,12 +19,12 @@ dev.off()
 # Density plot
 png('figures/qa/density_plot.png')
 par(mar = c(3, 3, 4, 1))
-plotDensity.AffyBatch(MLL.B, lwd=2, col=1:21, lty=1:21)
-legend('topright', LETTERS[1:21], col=1:21, lty=1:21, lwd=2, inset=0.1)
+plotDensity.AffyBatch(MLL.B, lwd=2, col=1:length(names), lty=1:length(names))
+legend('topright', names, col=1:length(names) lty=1:length(names) lwd=2, inset=0.1)
 dev.off()
 
 Pset = fitPLM(MLL.B)
-for (i in 1:21) {
+for (i in 1:length(names)) {
   png(paste('figures/qa/PLM', i, '.png', sep=''), width=9, height=3, units='in', res=300)
   par(mfrow=c(1, 3))
   image(MLL.B[, i]) # raw intensities for sample A
