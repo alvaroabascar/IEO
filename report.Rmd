@@ -115,6 +115,101 @@ rleDiag = RLE(Pset, type='stats')
 
 ## Batch identification
 
+The main goal of this step consists in finding if there exist any possible batch effect in our dataset, that is technical sources of variation that have been added to the samples during handling ((Leek et al., 2010)[http://www.nature.com/nrg/journal/v11/n10/full/nrg2825.html#close]). It is important to detect them in order to ensure that the possible future differences between expressions do not come from a non-biological or scientific variables source.
+
+After loading the needed libraries, we start the process retrieving the expression set of study and giving a specific letter to each sample.
+
+```{r message=FALSE}
+library(affy)
+library(Biobase)
+library(GEOquery)
+
+glioData = readRDS('glioData.rds')
+eset = readRDS('eset.rds')
+sampleNames(glioData) = letters[1:21]
+```
+
+Between all the different features our dataset have, the only possible batch source is the experiment date of each sample so this will be our batch grouping variable. To consider it, we have to set a scanDate variable in the correct format:
+
+```{r}
+scanDate = protocolData(glioData)$ScanDate
+scanDate = gsub(" .*", "", scanDate)
+scanDate = as.Date(scanDate, "%m/%d/%y")
+```
+
+Once defined that variable, we are already able to group together the samples obtained in the same date:
+
+```{r}
+minscan = min(scanDate)
+days = scanDate- minscan
+
+sort(days)
+```
+
+With those different day groups we can discretize the days numeric variable into desired intervals to finally obtain our surrogate batch indicator variable. In addition, the length of the variable _days_ allows us to define a vector of colors that will be used in the posterior plots.
+
+```{r}
+batch_days = data.frame(row.names=sort(unique(days)), batch=c(1:length(unique(days))))
+
+ourcolors = rainbow(length(unique(days)))
+```
+
+The differential outcome for our dataset is the survival time as the aim of the study is to define a set of genes expressed differentially between resistant cancer patients and non-resistant. To consider it, we extract the variable from the _eset_ and transform it into a character string.
+
+```{r}
+treatment = eset$characteristics_ch1.5
+
+survival_time = eset$characteristics_ch1.7
+survival_time = gsub('.*:', '', survival_time)
+survival_time = as.character(survival_time)
+```
+
+The division of our outcome respect the batch groups can be resumed with the _table_ function:
+
+```{r}
+table(data.frame(Outcome = survival_time, Batch = batch_days))
+```
+
+#### HIERARCHICAL CLUSTERING DENDROGRAM
+
+A nice way to see how effectively batch is confounding the outcome of interest consists of doing a hierarchical clustering of the samples indicating the batch to which each of them belongs to. We should start by calculating the distance between every pair of samples using a non-parametric association measure such as (Spearman correlation)[http://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient]:
+
+```{r}
+d = as.dist(1 - cor(exprs(eset), method="spearman"))
+```
+
+Using _hclust_ we perform the hierarchical clustering which can be easily understood showing it in a (dendrogram)[http://en.wikipedia.org/wiki/Dendrogram].
+
+```{r}
+# Hierarchical analysis:
+
+sampleClustering = hclust(d)
+
+# Function to generate the dendrogram:
+
+sampleDendrogram = as.dendrogram(sampleClustering, hang=0.5)
+batch = days
+names(batch) = sampleNames(eset)
+names(survival_time) = sampleNames(eset)
+sampleDendrogram = dendrapply(sampleDendrogram, function(x, batch, labels) {
+    ## for every node in the dendrogram if it is a leaf node
+    if (is.leaf(x)) {
+      print(x)
+        attr(x, "nodePar") = list(lab.col = as.vector(ourcolors[batch_days[as.character(batch[attr(x, "label")]),]]))
+        attr(x, "label") = as.vector(labels[attr(x, "label")])  ## label by survival_time
+    }
+    x
+}, batch, survival_time)
+
+# And the required command to plot it:
+
+plot(sampleDendrogram, main = "Hierarchical clustering of samples")
+legend("topright", paste("Batch", sort(unique(batch))), fill = ourcolors)
+```
+
+#TODO --> explain the dendrogram!
+
+
 ## Differential expression
 
 ## Conclusion
