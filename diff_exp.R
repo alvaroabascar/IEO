@@ -4,9 +4,9 @@ library(genefilter)
 library(limma)
 library(sva)
 
-MLL.B = readRDS('MLLB.rds')
+glioData = readRDS('glioData.rds')
 eset = readRDS('eset.rds')
-sampleNames(MLL.B) = letters[1:21]
+sampleNames(glioData) = letters[1:21]
 
 eset = eset[, eset$characteristics_ch1.6 != "survival status: NA"]
 eset$characteristics_ch1.1 = factor(eset$characteristics_ch1.1)

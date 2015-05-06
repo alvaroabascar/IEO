@@ -2,13 +2,13 @@ library(affyPLM)
 library(Biobase)
 library(corpcor)
 
-# MLL.B = ReadAffy(celfile.path = "./data")
+# glioData = ReadAffy(celfile.path = "./data")
 # eset = readRDS('full_eset.rds')
-MLL.B = readRDS('MLLB.rds')
+glioData = readRDS('glioData.rds')
 eset = readRDS('eset.rds')
-sampleNames(MLL.B) = letters[1:21]
+sampleNames(glioData) = letters[1:21]
 
-scanDate = protocolData(MLL.B)$ScanDate
+scanDate = protocolData(glioData)$ScanDate
 scanDate = gsub(" .*", "", scanDate)
 scanDate = as.Date(scanDate, "%m/%d/%y")
 

@@ -1,13 +1,13 @@
 library(affyPLM)
 library(Biobase)
 
-MLL.B = readRDS('MLLB.rds')
+glioData = readRDS('glioData.rds')
 eset = readRDS('eset.rds')
-sampleNames(MLL.B) = letters[1:21]
+sampleNames(glioData) = letters[1:21]
 
 # RMA normalization (Robust Multi Array)
 
-rmaEset = rma(MLL.B)
+rmaEset = rma(glioData)
 
 # MA
 png('figures/normalization/MA.png', height=8, width=14, units='in', res=300)
