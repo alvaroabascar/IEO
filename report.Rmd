@@ -28,8 +28,90 @@ browseURL("projectTemplate.html") ## open the resulting HTML file from R
 ```
 
 ## Data
-The microarray data used during the research of [Murat, A. _et al_ (2008)](http://www.ncbi.nlm.nih.gov/pubmed/18565887) can be found at the [Gene Expression Omnibus](http://www.ncbi.nlm.nih.gov/geo/), with the accession number [GSE7696](http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE7696). In order to proceed with this analysis, the file [GSE7696_RAW.tar](http://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE7696&format=file) must be uncompressed under the directory 'data/raw/' and the file [GSE7696_series_matrix.txt.gz](ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE7nnn/GSE7696/matrix/GSE7696_series_matrix.txt.gz) must be placed inside 'data/'
+The microarray data used during the research of [Murat, A. _et al_ (2008)](http://www.ncbi.nlm.nih.gov/pubmed/18565887) can be found at the [Gene Expression Omnibus](http://www.ncbi.nlm.nih.gov/geo/), with the accession number [GSE7696](http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE7696). In order to proceed with this analysis, the file [GSE7696_RAW.tar](http://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE7696&format=file) must be uncompressed under the directory 'data/raw/' and the file [GSE7696_series_matrix.txt.gz](ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE7nnn/GSE7696/matrix/GSE7696_series_matrix.txt.gz) must be placed inside 'data/'.
+
+## Subsampling
+
+The original data contained 84 samples, of which 4 are controls, 28 correspond to patients treated with radiotherapy, and 52 to patients treated with both TMZ and radiotherapy. In order to have a more manageable analysis we decided to proceed, by now, with only 21 samples. The following script was used to do a subsampling keeping the original proportions among controls, TMZ/radiotherapy and radiotherapy samples.
+
+```{r message=FALSE}
+library(affy)
+library(Biobase)
+library(GEOquery)
+
+# Cache the data to avoid having to load it again next time from the .txt
+if (file.exists('full_eset.rds')) {
+  eset = readRDS('full_eset.rds')
+} else {
+  eset = getGEO(filename='data/GSE7696_series_matrix.txt.gz')
+  saveRDS(eset, 'full_eset.rds')
+}
+
+# extract sample names
+samples = colnames(eset)
+
+# separate the samples by treatment group
+no_treated = samples[eset$characteristics_ch1.5 == "treatment: NA"]
+tmz_rt = samples[eset$characteristics_ch1.5 == "treatment: TMZ/radiotherapy"]
+rt = samples[eset$characteristics_ch1.5 == "treatment: radiotherapy"]
+
+# take 21 samples, keeping the proportions of the original dataset
+no_treated = sample(no_treated, size=1)
+tmz_rt = sample(tmz_rt, size=13)
+rt = sample(rt, size=7)
+
+subsample_names = c(no_treated, tmz_rt, rt)
+# turn sample names into filenames
+subsample_filenames = paste(subsample_names, '.cel.gz', sep='')
+
+# read only the necessary the expression data
+glioData = ReadAffy(celfile.path = "./data/raw", filenames=subsample_filenames)
+subsampled_eset = eset[, subsample_names]
+
+# save the subsampled data for posterior use
+saveRDS(subsampled_eset, 'eset.rds')
+saveRDS(glioData, 'glioData.rds')
+```
+
 ## Quality assessment and normalization
+
+```{r}
+library(affyPLM)
+
+sampleNames(glioData) = letters[1:21]
+
+# Scanner plot analysis
+par(mfrow = c(3, 7), mar = c(1, 1, 3, 1))
+image(glioData)
+
+# Raw intensity boxplot
+par(mar = c(4, 5, 0, 1))
+boxplot(glioData)
+
+# Density plot
+par(mar = c(3, 3, 4, 1))
+plotDensity.AffyBatch(glioData, lwd=2, col=1:21, lty=1:21)
+legend('topright', LETTERS[1:21], col=1:21, lty=1:21, lwd=2, inset=0.1)
+
+Pset = fitPLM(glioData)
+for (i in 1:21) {
+  par(mfrow=c(1, 3))
+  image(glioData[, i]) # raw intensities for sample A
+  image(Pset, type="resids", which=i) # PLM resids for sample A
+  image(Pset, type="weights", which=i) # PLM resids for sample A
+}
+
+# Probe level modeling
+NUSE(Pset)
+
+# RLE
+RLE(Pset)
+
+nuseDiag = NUSE(Pset, type='stats')
+rleDiag = RLE(Pset, type='stats')
+```
+
+## Normalization
 
 ## Batch identification
 
