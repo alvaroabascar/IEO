@@ -22,9 +22,8 @@ batch_days = data.frame(row.names=sort(unique(days)), batch=c(1:length(unique(da
 # Just group samples by day
 ourcolors = rainbow(length(unique(days)))
 
-treatment = eset$characteristics_ch1.5
-
 survival_time = eset$characteristics_ch1.7
+
 survival_time = gsub('.*:', '', survival_time)
 survival_time = as.character(survival_time)
 
