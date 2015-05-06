@@ -1,0 +1,44 @@
+# Re-analysis of the microarray data published by Murat, A. et al. (2008) "Stem Cell–Related “Self-Renewal” Signature and High Epidermal Growth Factor Receptor Expression Associated With Resistance to Concomitant Chemoradiotherapy in Glioblastoma"
+
+### Álvaro Abella Bascarán (alvaro.abella01@estudiant.upf.edu)
+### Eloi Casals (eloi.casals01@estudiant.upf.edu)
+### Samuel Miravet Verde (samuel.miravet01@estudiant.upf.edu)
+
+## Introduction
+
+Glioblastoma multiforme is the most presented and aggressive brain tumor in humans, involving glial cells, with an incidence of 2–3 cases per 100,000 person life-years in Europe and North America ([Fonnet E. Bleeker, _et al_ (2012)](http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3337398/)).
+
+Treatment can involve chemotherapy, radiation and surgery. Median survival with standard-of-care radiation and chemotherapy with the alkylating agent temozolomide is 15 months([Johnson, Derek R. _et al_ (2011)](http://link.springer.com/article/10.1007%2Fs11060-011-0749-4)) while the median survival without treatment is 4 and a half months. Regretfully glioblastomas are notorious for resistance to therapy, which has been attributed to DNA-repair proficiency, a multitude of deregulated molecular pathways, and, more recently, to the particular biologic behavior of tumor stem-like cells. Here, based on the reference work of [Murat, A. _et al_ (2008)](http://www.ncbi.nlm.nih.gov/pubmed/18565887), we aimed to identify the molecular profiles specific for treatment resistance to the current standard of care of concomitant chemoradiotherapy with temozolomide.
+
+To achieve our goal, we take from the reference study a set of gene expression profiles of 80 glioblastomas of patients treated whithin clinical trials of concomitant and adjuvant temozolomide to radiotherapy (n=52) and patients treated with only radioterapy (n=28). In addition, 4 control patients were added to the study.
+
+
+This document should be processed from R and you need to install the packages
+[knitr](http://cran.r-project.org/web/packages/knitr/index.html) and
+[markdown](http://cran.r-project.org/web/packages/markdown/index.html). Once
+they are installed, you have to type the following instructions that generate
+a HTML document that you can open with a web browser:
+
+```
+library(knitr)     ## required for "knitting" from Rmd to md
+library(markdown)  ## required for processing from md to HTML
+knit("projectTemplate.Rmd", "projectTemplate.md")  ## process Rmd to md
+markdownToHTML("projectTemplate.md", "projectTemplate.html") ## process md to HTML
+browseURL("projectTemplate.html") ## open the resulting HTML file from R
+```
+
+## Data
+The microarray data used during the research of [Murat, A. _et al_ (2008)](http://www.ncbi.nlm.nih.gov/pubmed/18565887) can be found at the [Gene Expression Omnibus](http://www.ncbi.nlm.nih.gov/geo/), with the accession number [GSE7696](http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE7696). In order to proceed with this analysis, the file [GSE7696_RAW.tar](http://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE7696&format=file) must be uncompressed under the directory 'data/raw/' and the file [GSE7696_series_matrix.txt.gz](ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE7nnn/GSE7696/matrix/GSE7696_series_matrix.txt.gz) must be placed inside 'data/'
+## Quality assessment and normalization
+
+## Batch identification
+
+## Differential expression
+
+## Conclusion
+
+## Session information
+
+```{r}
+sessionInfo()
+```
