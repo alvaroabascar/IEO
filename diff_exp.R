@@ -1,34 +1,46 @@
+options(error=utils::recover) 
+
 library(affyPLM)
 library(Biobase)
 library(genefilter)
 library(limma)
 library(sva)
 
-glioData = readRDS('glioData.rds')
-eset = readRDS('eset.rds')
-sampleNames(glioData) = letters[1:21]
+#glioData = readRDS('glioData.rds')
+#eset = readRDS('eset.rds')
+glioData = readRDS('full_glioData.rds')
+eset = readRDS('full_eset.rds')
+#sampleNames(glioData) = letters[1:ncol(eset)]
 
 eset = eset[, eset$characteristics_ch1.6 != "survival status: NA"]
-eset$characteristics_ch1.1 = factor(eset$characteristics_ch1.1)
-eset$characteristics_ch1.2 = factor(eset$characteristics_ch1.2)
-eset$characteristics_ch1.3 = factor(eset$characteristics_ch1.3)
-eset$characteristics_ch1.4 = factor(eset$characteristics_ch1.4)
-eset$characteristics_ch1.5 = factor(eset$characteristics_ch1.5)
-eset$characteristics_ch1.6 = factor(eset$characteristics_ch1.6)
-eset$characteristics_ch1.7 = factor(eset$characteristics_ch1.7)
-eset$characteristics_ch1.8 = factor(eset$characteristics_ch1.8)
-eset$mgmt = eset$characteristics_ch1.9
+eset$characteristics_ch1.1 = factor(eset$characteristics_ch1.1) # disease status: re-recurrent GBM
+eset$characteristics_ch1.2 = factor(eset$characteristics_ch1.2) # patient id
+eset$characteristics_ch1.3 = factor(eset$characteristics_ch1.3) # age: dd.d
+eset$characteristics_ch1.4 = factor(eset$characteristics_ch1.4) # gender: MALE/FEMALE
+eset$characteristics_ch1.5 = factor(eset$characteristics_ch1.5) # treatment: radiotherapy or TMZ/radiotherapy
+eset$characteristics_ch1.6 = factor(eset$characteristics_ch1.6) # survival status: 0 or 1
+eset$characteristics_ch1.7 = factor(eset$characteristics_ch1.7) # survival time in months: 25.13
+eset$characteristics_ch1.8 = factor(eset$characteristics_ch1.8) # mgmt status: M or U
+eset$mgmt = eset$characteristics_ch1.8
+eset$treatment = eset$characteristics_ch1.5
 
-threshold = 20
-eset$survival_time = as.double(gsub('.*: ', '', eset$characteristics_ch1.7)) > threshold
+eset$survival_status = as.double(gsub('.*: ', '', eset$characteristics_ch1.6)) == 1
+eset$survival_status = factor(eset$survival_status)
+
+survival_threshold = 20
+eset$survival_time = as.double(gsub('.*: ', '', eset$characteristics_ch1.7)) > survival_threshold
 eset$survival_time = factor(eset$survival_time)
 
-# Load the two different survival groups & plot the log fold-changes between means:
-# zeroExp <- rowMeans(exprs(eset[, eset$survival_time == "survival status: 0"]))
-# oneExp <- rowMeans(exprs(eset[, eset$survival_time == "survival status: 1"]))
+age_threshold = 50
+eset$aged = as.double(gsub('.*: ', '', eset$characteristics_ch1.3)) > age_threshold
+eset$aged = factor(eset$aged)
 
-zeroExp <- rowMeans(exprs(eset[, eset$survival_time]))
-oneExp <- rowMeans(exprs(eset[, eset$survival_time != TRUE]))
+# Load the two different survival groups & plot the log fold-changes between means:
+ zeroExp <- rowMeans(exprs(eset[, eset$survival_status]))
+ oneExp <- rowMeans(exprs(eset[, eset$survival_status != TRUE]))
+
+#zeroExp <- rowMeans(exprs(eset[, eset$survival_time]))
+#oneExp <- rowMeans(exprs(eset[, eset$survival_time != TRUE]))
 
 png('figures/diff_exp/fold_change_survival.png', width=10, height=6, units='in', res=700)
 par(mfrow = c(1, 2))
@@ -36,7 +48,7 @@ plot(zeroExp, oneExp, xlab = "Zero", ylab = "One", pch = ".", cex = 4, las = 1)
 plot((oneExp + zeroExp)/2, oneExp - zeroExp, pch = ".", cex = 4, las = 1)
 dev.off()
 
-allTests <- rowttests(eset, eset$survival_time)
+allTests <- rowttests(eset, eset$survival_status)
 
 # FDR adjustment
 padjFDR <- p.adjust(allTests$p.value, method = "BH")
@@ -53,27 +65,59 @@ abline(v = quantile(IQRs, prob = 0.3), col = "red", lwd = 2)
 dev.off()
 
 maskHighVariability <- IQRs > quantile(IQRs, prob = 0.3)
-eset_filtered <- eset[maskHighVariability, ]
+#eset_filtered <- eset[maskHighVariability, ]
 #dim(eset_filtered)
 
+# Remove low variability genes by selecting 
+# the most variable probe sets (standard deviation, >0.75),
+# following the proposal from the paper
+maskHighVariability_sd <- apply(exprs(eset), 1, sd)>0.75
+#eset_filtered <- eset[maskHighVariability_sd, ]
+
+mask = maskHighVariability & maskHighVariability_sd
+eset_filtered <- eset[mask, ]
 
 # Again: 
 
-fewerTests <- rowttests(eset_filtered, eset_filtered$survival_time)
+fewerTests <- rowttests(eset_filtered, eset_filtered$survival_status)
 padjBonf <- p.adjust(fewerTests$p.value, method = "bonferroni")
 #sum(padjBonf < 0.01)
 
 padjFDR <- p.adjust(fewerTests$p.value, method = "BH")
 #sum(padjFDR < 0.01)
 
+# To reduce even more the numbero of analysed probe sets 
+# by using the nsFilter function. From the nsFilter help page:
+# "Filtering features exhibiting little variation, or
+#     a consistently low signal, across samples can be advantageous for
+#     the subsequent data analysis (Bourgon et al.).  Furthermore, one
+#     may decide that there is little value in considering features with
+#     insufficient annotation."
+
+library('hgu133plus2.db')
+annotation(eset_filtered)<-'hgu133plus2.db'
+
+filtered <- nsFilter(eset_filtered, require.entrez=TRUE,
+         require.GOBP=FALSE, require.GOCC=FALSE,
+         require.GOMF=FALSE, require.CytoBand=FALSE,
+         remove.dupEntrez=TRUE, var.func=IQR,
+         var.cutoff=0.5, var.filter=TRUE,
+         filterByQuantile=TRUE, feature.exclude="^AFFX")
+eset_filtered <- filtered$eset
+fewerTests <- rowttests(eset_filtered, eset_filtered$survival_status)
+padjFDR <- p.adjust(fewerTests$p.value, method = "BH")
+
 
 ######
 # MODERATED t-test using limma
 ######
 
-design <- model.matrix(~survival_time, data = eset)
+eset_filtered <- eset_filtered[, eset_filtered$treatment == "treatment: TMZ/radiotherapy"] ###########hack
+eset_filtered$mgmtM = eset_filtered$mgmt == "mgmt status: M"
 
-fit <- lmFit(eset, design)
+design <- model.matrix(~survival_status, data = eset_filtered)
+
+fit <- lmFit(eset_filtered, design)
 fit <- eBayes(fit)
 
 res <- decideTests(fit)
@@ -98,20 +142,21 @@ dev.off()
 
 # Adjust for covariates
 
-design <- model.matrix(~survival_time + characteristics_ch1.4, data = eset)
-fit <- lmFit(eset, design)
-fit <- eBayes(fit)
+#design <- model.matrix(~survival_time + characteristics_ch1.5, data = eset_filtered)
+#fit <- lmFit(eset_filtered, design)
+#fit <- eBayes(fit)
 # summary(decideTests(fit, p.value = 0.1))
 
 # Surrogate Variables
-mod <- model.matrix(~survival_time + characteristics_ch1.4, data = eset)
-mod0 <- model.matrix(~characteristics_ch1.4, data = eset)
+# adjusted for age (> 50 years) and MGMT methylation status
+mod <- model.matrix(~survival_status + mgmtM + aged, data = eset_filtered)
+mod0 <- model.matrix(~ mgmtM + aged, data = eset_filtered)
 
-svaobj <- sva(exprs(eset), mod, mod0)
+svaobj <- sva(exprs(eset_filtered), mod, mod0)
 
 modSVs <- cbind(mod, svaobj$sv)
 
-fit <- lmFit(eset, modSVs)
+fit <- lmFit(eset_filtered, modSVs)
 fit <- eBayes(fit)
 ttadj <- topTable(fit, coef = 2, n = Inf)
 
