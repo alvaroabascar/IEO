@@ -16,6 +16,7 @@ scanDate = as.Date(scanDate, "%m/%d/%y")
 
 minscan = min(scanDate)
 days = scanDate- minscan
+sort(days)
 
 batch_days = data.frame(row.names=sort(unique(days)), batch=c(1:length(unique(days))))
 
@@ -49,31 +50,55 @@ sampleDendrogram = dendrapply(sampleDendrogram, function(x, batch, labels) {
 plot(sampleDendrogram, main = "Hierarchical clustering of samples")
 legend("topright", paste("Batch", sort(unique(batch))), fill = ourcolors)
 
+
 # MULTIDIMENSIONAL SCALING (MDS)
+
 cmd = cmdscale(as.dist(1 - cor(exprs(eset), method = "spearman")))
+dim(cmd)
+head(cmd)
+
+# Ploting the results
 plot(cmd, type = "n")
 text(cmd, survival_time, col = ourcolors[batch_days[as.character(batch),]], cex = 0.9)
 legend("topleft", paste("Batch", unique(batch)), fill = ourcolors[batch_days[as.character(unique(batch)),]], inset = 0.01)
 
-# maskNormalSamples = treatment == "Normal"
-# normalSampleClustering = hclust(as.dist(1 - cor(exprs(eset[, maskNormalSamples]), 
+
+# # Protocol to perform the Batch effect detection with only a concrete group, 
+# # in the example we select a range of survival times smaller than 20 months.
+# # This would be useful in case of needing to check in detail the batch effect 
+# # in a determined set of samples. 
+# 
+# masktwentySamples = survival_time <= 20
+# twentySampleClustering = hclust(as.dist(1 - cor(exprs(eset[, masktwentySamples]), 
 #     method = "spearman")))
-# normalSampleDendrogram = as.dendrogram(normalSampleClustering, hang = 0.1)
-# normalBatch = batch[maskNormalSamples]
-# normalOutcome = treatment[maskNormalSamples]
-# normalSampleDendrogram = dendrapply(normalSampleDendrogram, function(x, batch, labels) {
+# twentySampleDendrogram = as.dendrogram(twentySampleClustering, hang = 0.1)
+# twentyBatch = batch[masktwentySamples]
+# twentyOutcome = survival_time[masktwentySamples]
+# twentySampleDendrogram = dendrapply(twentySampleDendrogram, function(x, batch, labels) {
 #     ## for every node in the dendrogram if it is a leaf node
 #     if (is.leaf(x)) {
-#         attr(x, "nodePar") = list(lab.col = as.vector(batch[attr(x, "label")]))  ## color by batch
-#         attr(x, "label") = as.vector(labels[attr(x, "label")])  ## label by outcome
+#     print(x)
+#     attr(x, "nodePar") = list(lab.col = as.vector(ourcolors[batch_days[as.character(batch[attr(x, "label")]),]]))
+#     attr(x, "label") = as.vector(labels[attr(x, "label")])  ## label by survival_time
 #     }
+#   x
+# }, batch, survival_time)
+# 
 #     x
-# }, normalBatch, normaloutcome)
+# }, twentyBatch, twentyOutcome)
+# 
+# plot(twentySampleDendrogram)
+# legend("topright", paste("Batch", unique(batch)), fill = ourcolors[batch_days[as.character(unique(batch)),]], inset = 0.01)
 
-# QUANTIFY CONFOUNDING
+
+# QUANTIFY CONFOUNDING by means of Principal Component Analysis
+
+# Plot of proportion of variance explained perprincipal component
 s = fast.svd(t(scale(t(exprs(eset)), center=TRUE, scale=TRUE)))
 plot(s$d^2/sum(s$d^2), type="b", lwd=2, las=1, xlab="Principal component", ylab="Proportion of variance")
 
+
+# Boxplots:
 par(mfrow=c(2, 3))
 for (i in 1:6) {
   boxplot(split(s$v[, i], batch), main=sprintf("PC%d %.0f%%", i, 100 * s$d[i]^2/sum(s$d^2)))
