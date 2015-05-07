@@ -151,14 +151,16 @@ rleDiag = RLE(Pset, type='stats')
 
 ## Batch identification
 
-The main goal of this step consists in finding if there exist any possible batch effect in our dataset, that is technical sources of variation that have been added to the samples during handling ((Leek et al., 2010)[http://www.nature.com/nrg/journal/v11/n10/full/nrg2825.html#close]). It is important to detect them in order to ensure that the possible future differences between expressions do not come from a non-biological or scientific variables source.
+The main goal of this step consists in finding if there exist any possible batch effect in our dataset, that is technical sources of variation that have been added to the samples during handling ([Leek, _et al_ (2010)](http://www.nature.com/nrg/journal/v11/n10/full/nrg2825.html#close)). It is important to detect them in order to ensure that the possible future differences between expressions do not come from a non-biological or scientific variables source.
 
 After loading the needed libraries, we start the process retrieving the expression set of study and giving a specific letter to each sample.
 
 ```{r message=FALSE}
-# library(affy)
-# library(Biobase)
-# library(GEOquery)
+library(affy)
+library(Biobase)
+library(GEOquery)
+library(affyPLM)
+library(corpcor)
 
 # glioData = readRDS('glioData.rds')
 # eset = readRDS('eset.rds')
@@ -193,8 +195,6 @@ ourcolors = rainbow(length(unique(days)))
 The differential outcome for our dataset is the survival time as the aim of the study is to define a set of genes expressed differentially between resistant cancer patients and non-resistant. To consider it, we extract the variable from the _eset_ and transform it into a character string.
 
 ```{r}
-treatment = eset$characteristics_ch1.5
-
 survival_time = eset$characteristics_ch1.7
 survival_time = gsub('.*:', '', survival_time)
 survival_time = as.character(survival_time)
@@ -203,18 +203,22 @@ survival_time = as.character(survival_time)
 The division of our outcome respect the batch groups can be resumed with the _table_ function:
 
 ```{r}
+<<<<<<< HEAD
 #table(data.frame(Outcome = survival_time, Batch = batch_days))
+=======
+table(data.frame(Outcome = survival_time, Batch = days))
+>>>>>>> a3b462a046246ae916996f9354adcccef1e5c7c3
 ```
 
-#### HIERARCHICAL CLUSTERING DENDROGRAM
+#### Hierarchical Clustering
 
-A nice way to see how effectively batch is confounding the outcome of interest consists of doing a hierarchical clustering of the samples indicating the batch to which each of them belongs to. We should start by calculating the distance between every pair of samples using a non-parametric association measure such as (Spearman correlation)[http://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient]:
+A nice way to see how effectively batch is confounding the outcome of interest consists of doing a hierarchical clustering of the samples indicating the batch to which each of them belongs to. We should start by calculating the distance between every pair of samples using a non-parametric association measure such as [Spearman correlation](http://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient):
 
 ```{r}
 d = as.dist(1 - cor(exprs(eset), method="spearman"))
 ```
 
-Using _hclust_ we perform the hierarchical clustering which can be easily understood showing it in a (dendrogram)[http://en.wikipedia.org/wiki/Dendrogram].
+Using _hclust_ we perform the hierarchical clustering which can be easily understood showing it in a [dendrogram](http://en.wikipedia.org/wiki/Dendrogram).
 
 ```{r}
 # Hierarchical analysis:
@@ -243,10 +247,230 @@ plot(sampleDendrogram, main = "Hierarchical clustering of samples")
 legend("topright", paste("Batch", sort(unique(batch))), fill = ourcolors)
 ```
 
-#TODO --> explain the dendrogram!
+In the dendrogram we are able to see how there does not exist any batch effect confounding our outcome as the different survival times are randomly distributed and the colors (representing the batch group) do not cluster in concrete branches. 
+
+#### Multidimensional Scaling
+
+Another way to verify whether batch is the main source of variation is [multidimensional scaling](http://en.wikipedia.org/wiki/Multidimensional_scaling) analysis. To perform it, we have to run the function _cmdscale_. The resulting _cmd_ object have to be a matrix of dimension (n,2) where n=number of samples.
+
+```{r}
+cmd = cmdscale(as.dist(1 - cor(exprs(eset), method = "spearman")))
+
+dim(cmd)
+head(cmd)
+
+# Ploting the result
+plot(cmd, type = "n")
+text(cmd, survival_time, col = ourcolors[batch_days[as.character(batch),]], cex = 0.9)
+legend("topleft", paste("Batch", unique(batch)), fill = ourcolors[batch_days[as.character(unique(batch)),]], inset = 0.01)
+```
+
+All the survival times are mixed well and we cannot detect any color group in the distribution meaning that there is no bacth effect that could confound a possible differential classification of the outcome. 
+
+
+#### Quantifying Confounding
+
+The last test we are going to perform is the quantification of confounding between batch and outcome by means of a [Principal Component Analysis](http://en.wikipedia.org/wiki/Principal_component_analysis) test. It works rebuilding the data set in new variables (Principal Components) in terms of linear combinations, such that they capture most of the variance of the data. The purpose of applying PCA in this case is to compare the principal components that account for the largest variability of the data, to known variables such as a batch indicator.
+
+We start the process computing the [single value decomposition](http://en.wikipedia.org/wiki/Singular_value_decomposition) (SVD) of the data:
+
+```{r}
+s = fast.svd(t(scale(t(exprs(eset)), center=TRUE, scale=TRUE)))
+```
+
+This value allows us to plot the fraction of variance explained by each principal component as follows:
+
+```{r}
+plot(s$d^2/sum(s$d^2), type="b", lwd=2, las=1, xlab="Principal Component", ylab="Proportion of variance")
+```
+
+Using the function _cumsum_ we can evaluate the amount variance accumulated with each principal component:
+
+```{r}
+head(cumsum(s$d^2/sum(s$d^2)))
+```
+
+# TODO : in this case we need X components to sum more than 50% of the variance. 
+
+Finally, in order to get an estimate the amount of variability driven by batch, we should inspect the correlations between our batch indicator variable and the right-singular vectors in the component _v_ of _s_:
+
+# TODO, adjust the boxplots to the number of components considered before
+```{r}
+par(mfrow=c(2, 3))
+for (i in 1:6) {
+  boxplot(split(s$v[, i], batch), main=sprintf("PC%d %.0f%%", i, 100 * s$d[i]^2/sum(s$d^2)))
+}
+```
+
+# TODO: Interpretacion de esto???
+
+# TODO: ADD Surrogate Variables steps???
+
 
 
 ## Differential expression
+
+With the aim to identify changes in gene expression associated to a specific condition, we perform a gene differential expression analysis. The condition in this analysis is the survivavility of the tumoral condition in patients treated with concomitant chemoradiotherapy(TMZ/RT->TMZ).
+
+
+```{r "DE", message=FALSE}
+library(Biobase)
+library(genefilter)
+library(limma)
+library(sva)
+library('hgu133plus2.db')
+annotation(eset)<-'hgu133plus2.db'
+
+```
+
+First we setup the input data in a format suitable for the analysis.
+
+```{r}
+eset = eset[, eset$characteristics_ch1.6 != "survival status: NA"] # Remove control patients
+eset$characteristics_ch1.1 = factor(eset$characteristics_ch1.1) # disease status: re-recurrent GBM
+eset$characteristics_ch1.2 = factor(eset$characteristics_ch1.2) # patient id
+eset$characteristics_ch1.3 = factor(eset$characteristics_ch1.3) # age: dd.d
+eset$characteristics_ch1.4 = factor(eset$characteristics_ch1.4) # gender: MALE/FEMALE
+eset$characteristics_ch1.5 = factor(eset$characteristics_ch1.5) # treatment: radiotherapy or TMZ/radiotherapy
+eset$characteristics_ch1.6 = factor(eset$characteristics_ch1.6) # survival status: 0 or 1
+eset$characteristics_ch1.7 = factor(eset$characteristics_ch1.7) # survival time in months: 25.13
+eset$characteristics_ch1.8 = factor(eset$characteristics_ch1.8) # mgmt status: M or U
+eset$mgmt = eset$characteristics_ch1.8
+eset$treatment = eset$characteristics_ch1.5
+
+eset$survival_status = as.double(gsub('.*: ', '', eset$characteristics_ch1.6)) == 1
+eset$survival_status = factor(eset$survival_status)
+
+survival_threshold = 20
+eset$survival_time = as.double(gsub('.*: ', '', eset$characteristics_ch1.7)) > survival_threshold
+eset$survival_time = factor(eset$survival_time)
+
+age_threshold = 50
+eset$aged = as.double(gsub('.*: ', '', eset$characteristics_ch1.3)) > age_threshold
+eset$aged = factor(eset$aged)
+
+```
+
+#### Fold-change
+ 
+To evaluate the expression levels we calculate the fold-change expression for each gene, comparing the expression levels between the surviving and non-surviving groups.
+ 
+```{r}
+zeroExp <- rowMeans(exprs(eset[, eset$survival_time]))
+oneExp <- rowMeans(exprs(eset[, eset$survival_time != TRUE]))
+par(mfrow = c(1, 2))
+plot(zeroExp, oneExp, xlab = "Zero", ylab = "One", pch = ".", cex = 4, las = 1)
+plot((oneExp + zeroExp)/2, oneExp - zeroExp, pch = ".", cex = 4, las = 1)
+```
+
+#### Significance
+
+We need to assess the significance of the differentially expressed genes, applying a Benjamini-Hochberg multiple test correction.
+
+```{r}
+allTests <- rowttests(eset, eset$survival_time)
+min(allTests$p.value)
+```
+
+We need to adjust for multiple testing.
+
+```{r}
+# FDR adjustment
+padjFDR <- p.adjust(allTests$p.value, method = "BH")
+sum(padjFDR < 0.05)
+min(padjFDR)
+```
+
+From this test it is clear that there are too many genes, and the multiple test correction renders all the tests insignificant due to the large number of tests. A possible solution to this problem consists in removing genes that are uninteresting biologically-wise.
+
+First, we remove genes that show little variation. Following the procedure of the paper, we remove the genes that have a standard deviation below 0.75.
+
+```{r}
+maskHighVariability <- apply(exprs(eset), 1, sd)>0.75
+eset_filtered <- eset[maskHighVariability, ]
+```
+
+This reduces the dataset from `r nrow(eset)` genes down to `r nrow(eset_filtered)`. Although there is an increase in significance with the lower amount of tested genes, it is still not enough, as seen on the minimal corrected p-value obtained.
+
+```{r}
+fewerTests <- rowttests(eset_filtered, eset_filtered$survival_time)
+padjFDR <- p.adjust(fewerTests$p.value, method = "BH")
+sum(padjFDR < 0.05)
+min(padjFDR)
+```
+
+To reduce even more the number of analysed probe sets we use the _nsFilter_ function. This utility function filters out  features exhibiting little variation, or a consistently low signal, across samples, as well as features with insufficient annotation.
+
+```{r}
+filtered <- nsFilter(eset_filtered, require.entrez=TRUE,
+         require.GOBP=FALSE, require.GOCC=FALSE,
+         require.GOMF=FALSE, require.CytoBand=FALSE,
+         remove.dupEntrez=TRUE, var.func=IQR,
+         var.cutoff=0.5, var.filter=TRUE,
+         filterByQuantile=TRUE, feature.exclude="^AFFX")
+eset_filtered <- filtered$eset
+fewerTests <- rowttests(eset_filtered, eset_filtered$survival_time)
+padjFDR <- p.adjust(fewerTests$p.value, method = "BH")
+sum(padjFDR < 0.05)
+min(padjFDR)
+```
+
+The dataset is reduced to `r nrow(eset_filtered)` genes. As seen in the result, this improves a little bit further the significance, with a minimum p-value = `r signif(min(padjFDR), digits=2)`, but still is not enough.
+
+
+#### Moderated t-test using limma
+
+To prevent problems associated to limited replication, we use the empirical Bayes method from the Bioconductor limma package to calculate a moderated t-test that takes into account the typical standard deviation of the genes.
+
+We project our data to a linear model and calculate the moderated t-statistics.
+
+```{r}
+#########eset_filtered <- eset_filtered[, eset_filtered$treatment == "treatment: TMZ/radiotherapy"]
+
+design <- model.matrix(~survival_time, data = eset_filtered)
+fit <- lmFit(eset_filtered, design)
+fit <- eBayes(fit)
+res <- decideTests(fit, p.value = 0.1)
+summary(res)
+```
+
+We can see from the summary result that there are no significantly expressed genes. We can also check the results from the distribution of p-values for all the genes and the volcano plot.
+
+```{r}
+tt <- topTable(fit, coef = 2, n = Inf)
+par(mfrow = c(1, 2), mar = c(4, 5, 2, 2))
+hist(tt$P.Value, xlab = "Raw P-values", main = "")
+hist(tt$P.Value, xlab = "Raw P-values", breaks = 1000, main = "")
+
+plot(tt$logFC, -log10(tt$P.Value), pch=".", cex=4, col=grey(0.75), cex.axis=1.2, las=1, cex.lab=1.5, xlab=expression(paste(log[2], " Fold change")), ylab=expression(paste(-log[10], " P-value")))
+points(tt[tt$adj.P.Val < 0.1, "logFC"], -log10(tt[tt$adj.P.Val < 0.1, "P.Value"]), pch=".", cex=4, col="red")
+# abline(h=-log10(max(tt[tt$adj.P.Val < 0.1, "P.Value"])), col=grey(0.5), lty=2)
+```
+
+#### Adjusting for covariates
+
+We can adjust for the contribution of covariates. As proposed in the paper, we adjust for MGMT methylation status and for age>50.
+
+```{r}
+eset_filtered$mgmtM = eset_filtered$mgmt == "mgmt status: M"
+
+# Surrogate Variables
+# adjusted for age (> 50 years) and MGMT methylation status
+mod <- model.matrix(~survival_status + mgmtM + aged, data = eset_filtered)
+mod0 <- model.matrix(~ mgmtM + aged, data = eset_filtered)
+
+svaobj <- sva(exprs(eset_filtered), mod, mod0)
+
+modSVs <- cbind(mod, svaobj$sv)
+
+fit <- lmFit(eset_filtered, modSVs)
+fit <- eBayes(fit)
+ttadj <- topTable(fit, coef = 2, n = Inf)
+
+par(mfrow = c(1, 2), mar = c(4, 5, 2, 2))
+hist(ttadj$P.Value, xlab = "Raw P-values", main = "")
+hist(ttadj$P.Value, xlab = "Raw P-values", breaks = 1000, main = "")
+```
 
 ## Conclusion
 
