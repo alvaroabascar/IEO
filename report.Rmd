@@ -34,11 +34,16 @@ The microarray data used during the research of [Murat, A. _et al_ (2008)](http:
 
 The original data contained 84 samples, of which 4 are controls, 28 correspond to patients treated with radiotherapy, and 52 to patients treated with both TMZ and radiotherapy. In order to have a more manageable analysis we decided to proceed, by now, with only 21 samples. The following script was used to do a subsampling keeping the original proportions among controls, TMZ/radiotherapy and radiotherapy samples.
 
-```{r message=FALSE}
+We need GEOquery to retrieve the assay data and affy to retrieve the expression data.
+```{r libraries, message=FALSE}
 library(affy)
-library(Biobase)
 library(GEOquery)
+```
 
+This is a simple way to cache the full eset (all the assay data) in a simple object, to avoid
+loading it from the .txt.gz the next time (a costly process)
+
+```{r cache_data}
 # Cache the data to avoid having to load it again next time from the .txt
 if (file.exists('full_eset.rds')) {
   eset = readRDS('full_eset.rds')
@@ -46,7 +51,12 @@ if (file.exists('full_eset.rds')) {
   eset = getGEO(filename='data/GSE7696_series_matrix.txt.gz')
   saveRDS(eset, 'full_eset.rds')
 }
+```
 
+
+We separate the sample names by treatment group, and take enough samples from each group to have a total of 21, keeping the original proportions.
+
+```{r subsampling_step1}
 # extract sample names
 samples = colnames(eset)
 
@@ -59,40 +69,61 @@ rt = samples[eset$characteristics_ch1.5 == "treatment: radiotherapy"]
 no_treated = sample(no_treated, size=1)
 tmz_rt = sample(tmz_rt, size=13)
 rt = sample(rt, size=7)
+```
 
+Join the three arrays of sample names, and turn them into file names. Then read the AffyBatch data from the specified files only. This allows us to retrieve the data much faster, as we are loading only the 21 required samples, and not the whole set of 84 samples.
+
+```{r subsampling_step2}
 subsample_names = c(no_treated, tmz_rt, rt)
 # turn sample names into filenames
 subsample_filenames = paste(subsample_names, '.cel.gz', sep='')
 
 # read only the necessary the expression data
 glioData = ReadAffy(celfile.path = "./data/raw", filenames=subsample_filenames)
+```
+
+We also filter the original assay data to keep only the data corresponding to the samples we have choosen. We finally save both objects for posterior use. 
+```{r subsampling_step3}
 subsampled_eset = eset[, subsample_names]
 
 # save the subsampled data for posterior use
 saveRDS(subsampled_eset, 'eset.rds')
 saveRDS(glioData, 'glioData.rds')
+
+eset = subsampled_eset
 ```
 
 ## Quality assessment and normalization
 
 ```{r}
 library(affyPLM)
-
+```
+We plot, in the first place, the chip images in order to detect artifacts and discard those samples corresponding to malfunctioning chips.
+```{r chip_images, out.width="800px", dpi=400}
 sampleNames(glioData) = letters[1:21]
-
 # Scanner plot analysis
 par(mfrow = c(3, 7), mar = c(1, 1, 3, 1))
 image(glioData)
+```
+From this images we cannot see any obvious artifact, and so far we can consider all of the samples as valids.
 
+<!---
+
+We can further assess the quality of the samples checking the distribution of intensities from each chip. Chips with a distribution which differs significantly from the rest should be taken with caution.
+```{r intensity_boxplots}
 # Raw intensity boxplot
 par(mar = c(4, 5, 0, 1))
 boxplot(glioData)
+```
 
+```{r density_plots}
 # Density plot
 par(mar = c(3, 3, 4, 1))
 plotDensity.AffyBatch(glioData, lwd=2, col=1:21, lty=1:21)
 legend('topright', LETTERS[1:21], col=1:21, lty=1:21, lwd=2, inset=0.1)
+```
 
+```{r intensities}
 Pset = fitPLM(glioData)
 for (i in 1:21) {
   par(mfrow=c(1, 3))
@@ -100,13 +131,18 @@ for (i in 1:21) {
   image(Pset, type="resids", which=i) # PLM resids for sample A
   image(Pset, type="weights", which=i) # PLM resids for sample A
 }
+```
 
+```{r NUSE}
 # Probe level modeling
 NUSE(Pset)
 
+```{r RLE}
 # RLE
 RLE(Pset)
+```
 
+```{r nuse_rle_stats}
 nuseDiag = NUSE(Pset, type='stats')
 rleDiag = RLE(Pset, type='stats')
 ```
@@ -120,13 +156,13 @@ The main goal of this step consists in finding if there exist any possible batch
 After loading the needed libraries, we start the process retrieving the expression set of study and giving a specific letter to each sample.
 
 ```{r message=FALSE}
-library(affy)
-library(Biobase)
-library(GEOquery)
+# library(affy)
+# library(Biobase)
+# library(GEOquery)
 
-glioData = readRDS('glioData.rds')
-eset = readRDS('eset.rds')
-sampleNames(glioData) = letters[1:21]
+# glioData = readRDS('glioData.rds')
+# eset = readRDS('eset.rds')
+# sampleNames(glioData) = letters[1:21]
 ```
 
 Between all the different features our dataset have, the only possible batch source is the experiment date of each sample so this will be our batch grouping variable. To consider it, we have to set a scanDate variable in the correct format:
@@ -167,7 +203,7 @@ survival_time = as.character(survival_time)
 The division of our outcome respect the batch groups can be resumed with the _table_ function:
 
 ```{r}
-table(data.frame(Outcome = survival_time, Batch = batch_days))
+#table(data.frame(Outcome = survival_time, Batch = batch_days))
 ```
 
 #### HIERARCHICAL CLUSTERING DENDROGRAM
@@ -219,3 +255,5 @@ legend("topright", paste("Batch", sort(unique(batch))), fill = ourcolors)
 ```{r}
 sessionInfo()
 ```
+
+--->
