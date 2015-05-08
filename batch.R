@@ -1,6 +1,7 @@
 library(affyPLM)
 library(Biobase)
 library(corpcor)
+library(sva)
 
 # glioData = ReadAffy(celfile.path = "./data")
 # eset = readRDS('full_eset.rds')
@@ -103,3 +104,28 @@ par(mfrow=c(2, 3))
 for (i in 1:6) {
   boxplot(split(s$v[, i], batch), main=sprintf("PC%d %.0f%%", i, 100 * s$d[i]^2/sum(s$d^2)))
 }
+
+
+# SURROGATE VARIABLE ANALYSIS
+
+mod <- model.matrix(~survival_time, data = pData(eset))
+head(mod)
+
+mod0 <- model.matrix(~1, data = pData(eset))
+
+# surrogate variables calling
+sv <- sva(exprs(eset), mod, mod0)
+
+par(mfrow = c(2, 5))
+for (i in 1:sv$n.sv) boxplot(sv$sv[, i] ~ batch, main = sprintf("SV %d", i), xlab = "Batch")
+
+
+pValues <- f.pvalue(exprs(eset), mod, mod0)
+sum(p.adjust(pValues, method = "BH") < 0.05)
+
+dim(eset)
+
+modSv <- cbind(mod, sv$sv)
+mod0Sv <- cbind(mod0, sv$sv)
+pValuesSv <- f.pvalue(exprs(esetBladder), modSv, mod0Sv)
+sum(p.adjust(pValuesSv, method = "BH") < 0.05)
