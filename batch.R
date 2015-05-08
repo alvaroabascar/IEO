@@ -127,5 +127,5 @@ dim(eset)
 
 modSv <- cbind(mod, sv$sv)
 mod0Sv <- cbind(mod0, sv$sv)
-pValuesSv <- f.pvalue(exprs(esetBladder), modSv, mod0Sv)
+pValuesSv <- f.pvalue(exprs(eset), modSv, mod0Sv)
 sum(p.adjust(pValuesSv, method = "BH") < 0.05)
