@@ -1,5 +1,5 @@
 ---
-output: pdf_document
+output: html_document
 ---
 # Re-analysis of the microarray data published by Murat, A. et al. (2008) "Stem Cell–Related “Self-Renewal” Signature and High Epidermal Growth Factor Receptor Expression Associated With Resistance to Concomitant Chemoradiotherapy in Glioblastoma"
 
@@ -34,7 +34,6 @@ browseURL("projectTemplate.html") ## open the resulting HTML file from R
 The microarray data used during the research of [Murat, A. _et al_ (2008)](http://www.ncbi.nlm.nih.gov/pubmed/18565887) can be found at the [Gene Expression Omnibus](http://www.ncbi.nlm.nih.gov/geo/), with the accession number [GSE7696](http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE7696). In order to proceed with this analysis, the file [GSE7696_RAW.tar](http://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE7696&format=file) must be uncompressed under the directory 'data/raw/' and the file [GSE7696_series_matrix.txt.gz](ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE7nnn/GSE7696/matrix/GSE7696_series_matrix.txt.gz) must be placed inside 'data/'.
 
 
-<!--
 ## Subsampling
 
 The original data contained 84 samples, of which 4 are controls, 28 correspond to patients treated with radiotherapy, and 52 to patients treated with both TMZ and radiotherapy. In order to have a more manageable analysis we decided to proceed, by now, with only 21 samples. The following script was used to do a subsampling keeping the original proportions among controls, TMZ/radiotherapy and radiotherapy samples.
@@ -87,6 +86,7 @@ subsample_filenames = paste(subsample_names, '.cel.gz', sep='')
 # read only the necessary the expression data
 glioData = ReadAffy(celfile.path = "./data/raw", filenames=subsample_filenames)
 
+sampleNames(glioData) = letters[1:21]
 # display used samples:
 subsample_names
 ```
@@ -96,8 +96,13 @@ We also filter the original assay data to keep only the data corresponding to th
 subsampled_eset = eset[, subsample_names]
 
 # save the subsampled data for posterior use
-saveRDS(subsampled_eset, 'eset.rds')
-saveRDS(glioData, 'glioData.rds')
+
+if (!file.exists('eset.rds')) {
+  saveRDS(subsampled_eset, 'eset.rds')
+}
+if (!file.exists('glioData.rds')) {
+  saveRDS(glioData, 'glioData.rds')
+}
 
 eset = subsampled_eset
 ```
@@ -110,8 +115,7 @@ library(affyPLM)
 
 #### Chip inspection
 We plot, in the first place, the chip images in order to detect artifacts and discard those samples corresponding to malfunctioning chips.
-```{r chip_images, out.width="800px", dpi=400}
-sampleNames(glioData) = letters[1:21]
+````{r chip_images, out.width="800px", dpi=400}
 # Scanner plot analysis
 par(mfrow = c(3, 7), mar = c(1, 1, 3, 1))
 image(glioData)
@@ -123,7 +127,7 @@ From this images we cannot see any obvious artifact, and so far we can consider 
 We can further assess the quality of the samples analysing the distribution of intensities from each chip. Chips with a distribution which differs significantly from the rest (in median or dispersion) should be taken with caution.
 
 A first step is to check the distribution of raw intensities in logarithmic scale:
-```{r intensity_boxplots, out.width="800px"}
+````{r intensity_boxplots, out.width="800px"}
 # Raw intensity boxplot
 par(mar = c(4, 5, 0, 1))
 boxplot(glioData)
@@ -131,7 +135,7 @@ boxplot(glioData)
 From the previous boxplots we see that every sample follows a similar distribution. Sample number "u" appears to have a slightly narrower and displaced distribution, but not enough to consider it wrong.
 
 We can get some more information (eg. bimodalities) by means of a non-parametric density estimation of raw intensity values:
-```{r density_plots, out.width="800px", dpi=300}
+````{r density_plots, out.width="800px", dpi=300}
 # Density plot
 par(mar = c(3, 3, 4, 1))
 plotDensity.AffyBatch(glioData, lwd=2, col=1:21, lty=1:21)
@@ -147,7 +151,7 @@ badSamplesRawDist = "u"
 #### Probe level modeling.
 
 We can assess the quality of Affymetrix chips using a linear model which relates the log intensities to the probe affinity effects, the array effects and the gaussian noise. Once we have the model we can represent the raw intensities (left), residuals (middle) and weights (right). 
-```{r intensities, out.width="800px"}
+````{r intensities, out.width="800px"}
 Pset = fitPLM(glioData)
 for (i in 1:21) {
   par(mfrow=c(1, 3))
@@ -166,7 +170,7 @@ badSamplesPLMResids = "j"
 ####  Normalized Unscaled Standard Errors (NUSE)
 
 By means of the NUSE we examine the median and interquartile range of all probesets in the chip, to obtain an overall view of chip expression quality.
-```{r NUSE, out.width="800px"}
+````{r NUSE, out.width="800px"}
 NUSE(Pset)
 ```
 
@@ -179,14 +183,14 @@ badSamplesNUSE = "u"
 #### Relative Log Expression (RLE)
 Relative Log Expression Values are calculated for each of the probesets. In tis case we compare the expression on each array against the median expression value for the probeset across all of the arrays. The RLE summaries can be helpful to detect technical sources of variability that are large compared to biological variation.
 
-```{r RLE, out.width="800px"}
+````{r RLE, out.width="800px"}
 # RLE
 RLE(Pset)
 ```
 All the samples display a similar median and interquartile range, with none of them exhibiting a very noticable deviation. 
 
 Besides the graphical inspection, we can also take a look at the median and interquantile range for each sample.
-```{r nuse_rle_stats}
+````{r nuse_rle_stats}
 nuseDiag = NUSE(Pset, type='stats')
 rleDiag = RLE(Pset, type='stats')
 nuseDiag
@@ -229,7 +233,7 @@ We can finally display a table showing the number of diagnostics failed by each 
 qaDiag <- data.frame(RawDist = rep(FALSE, ncol(eset)), PLMresids = rep(FALSE, ncol(eset)), NUSE = rep(FALSE, ncol(eset)), RLE = rep(FALSE, ncol(eset)), MA = rep(FALSE, ncol(eset)), Failed = rep(0, ncol(eset)), row.names = sampleNames(glioData))
 
 qaDiag[badSamplesRawDist, "RawDist"] <- TRUE
-qaDiag[badSamplesPLMresids, "PLMresids"] <- TRUE
+qaDiag[badSamplesPLMResids, "PLMresids"] <- TRUE
 qaDiag[badSamplesNUSE, "NUSE"] <- TRUE
 qaDiag[badSamplesRLE, "RLE"] <- TRUE
 qaDiag[badSamplesMA, "MA"] <- TRUE
@@ -252,10 +256,6 @@ library(Biobase)
 library(GEOquery)
 library(affyPLM)
 library(corpcor)
-
-# glioData = readRDS('glioData.rds')
-# eset = readRDS('eset.rds')
-# sampleNames(glioData) = letters[1:21]
 ```
 
 Between all the different features our dataset have, the only possible batch source is the experiment date of each sample so this will be our batch grouping variable. To consider it, we have to set a scanDate variable in the correct format:
