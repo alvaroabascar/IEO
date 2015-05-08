@@ -108,7 +108,7 @@ eset = subsampled_eset
 library(affyPLM)
 ```
 
-#### Chip inspection
+### Chip inspection
 We plot, in the first place, the chip images in order to detect artifacts and discard those samples corresponding to malfunctioning chips.
 ```{r chip_images, out.width="800px", dpi=400}
 sampleNames(glioData) = letters[1:21]
@@ -119,7 +119,7 @@ image(glioData)
 
 From this images we cannot see any obvious artifact, and so far we can consider all of the samples as valid.
 
-#### Analysis of intensities
+### Analysis of intensities
 We can further assess the quality of the samples analysing the distribution of intensities from each chip. Chips with a distribution which differs significantly from the rest (in median or dispersion) should be taken with caution.
 
 A first step is to check the distribution of raw intensities in logarithmic scale:
@@ -144,7 +144,7 @@ From the two previous diagnostics, we can consider sample "u" as wrong in terms 
 badSamplesRawDist = "u"
 ```
 
-#### Probe level modeling.
+### Probe level modeling.
 
 We can assess the quality of Affymetrix chips using a linear model which relates the log intensities to the probe affinity effects, the array effects and the gaussian noise. Once we have the model we can represent the raw intensities (left), residuals (middle) and weights (right). 
 ```{r intensities, out.width="800px"}
@@ -163,7 +163,7 @@ From the previous figures we can see that sample "j" appears to have a more inte
 badSamplesPLMResids = "j"
 ```
 
-####  Normalized Unscaled Standard Errors (NUSE)
+###  Normalized Unscaled Standard Errors (NUSE)
 
 By means of the NUSE we examine the median and interquartile range of all probesets in the chip, to obtain an overall view of chip expression quality.
 ```{r NUSE, out.width="800px"}
@@ -176,7 +176,7 @@ In this case we can take as valid those samples which don't deviate from the res
 badSamplesNUSE = "u"
 ```
 
-#### Relative Log Expression (RLE)
+### Relative Log Expression (RLE)
 Relative Log Expression Values are calculated for each of the probesets. In tis case we compare the expression on each array against the median expression value for the probeset across all of the arrays. The RLE summaries can be helpful to detect technical sources of variability that are large compared to biological variation.
 
 ```{r RLE, out.width="800px"}
@@ -206,7 +206,7 @@ In order to normalize the Affymetrix expression data we resort to the Robust Mul
 rmaEset = rma(glioData)
 ```
 
-#### MA plots
+### MA plots
 
 The MA plot can help us detect intensity dependent biases. In this case we compare (using a log ratio) the intensity of the red and green channels of the microarray (each representing a different condition). As we expect most of the genes to not be differentially expressed, most of the log ratios should be close to zero. Plotting the log ratio against the mean log intensity of both channels, we can detect dependences of the ratios on the fluorescence intensity.
 
@@ -224,7 +224,6 @@ badSamplesMA = c("c", "d", "o")
 
 We can finally display a table showing the number of diagnostics failed by each sample:
 
-<!-- TODO: FUCKING TABLE -->
 ```{r}
 qaDiag <- data.frame(RawDist = rep(FALSE, ncol(eset)), PLMresids = rep(FALSE, ncol(eset)), NUSE = rep(FALSE, ncol(eset)), RLE = rep(FALSE, ncol(eset)), MA = rep(FALSE, ncol(eset)), Failed = rep(0, ncol(eset)), row.names = sampleNames(glioData))
 
@@ -239,6 +238,7 @@ qaDiag <- qaDiag[order(qaDiag$Failed, decreasing = TRUE), ]
 qaDiag
 ```
 
+In general we have achieved very good results as none of the samples fail more than 2 tests so we decide to continue the study with all the samples. For future analysis considering the whole data set (>80) we could repeat this process and take only the best samples. 
 
 ## Batch identification
 
@@ -297,7 +297,7 @@ The division of our outcome respect the batch groups can be resumed with the _ta
 table(data.frame(Outcome = survival_time, Batch = days))
 ```
 
-#### Hierarchical Clustering
+### Hierarchical Clustering
 
 A nice way to see how effectively batch is confounding the outcome of interest consists of doing a hierarchical clustering of the samples indicating the batch to which each of them belongs to. We should start by calculating the distance between every pair of samples using a non-parametric association measure such as [Spearman correlation](http://en.wikipedia.org/wiki/Spearman%27s_rank_correlation_coefficient):
 
@@ -336,7 +336,7 @@ legend("topright", paste("Batch", sort(unique(batch))), fill = ourcolors)
 
 In the dendrogram we are able to see how there does not exist any batch effect confounding our outcome as the different survival times are randomly distributed and the colors (representing the batch group) do not cluster in concrete branches. 
 
-#### Multidimensional Scaling
+### Multidimensional Scaling
 
 Another way to verify whether batch is the main source of variation is [multidimensional scaling](http://en.wikipedia.org/wiki/Multidimensional_scaling) analysis. To perform it, we have to run the function _cmdscale_. The resulting _cmd_ object have to be a matrix of dimension (n,2) where n=number of samples.
 
@@ -355,7 +355,7 @@ legend("topleft", paste("Batch", unique(batch)), fill = ourcolors[batch_days[as.
 All the survival times are mixed well and we cannot detect any color group in the distribution meaning that there is no bacth effect that could confound a possible differential classification of the outcome. 
 
 
-#### Quantifying Confounding
+### Quantifying Confounding
 
 The last test we are going to perform is the quantification of confounding between batch and outcome by means of a [Principal Component Analysis](http://en.wikipedia.org/wiki/Principal_component_analysis) test. It works rebuilding the data set in new variables (Principal Components) in terms of linear combinations, such that they capture most of the variance of the data. The purpose of applying PCA in this case is to compare the principal components that account for the largest variability of the data, to known variables such as a batch indicator.
 
@@ -377,11 +377,10 @@ Using the function _cumsum_ we can evaluate the amount variance accumulated with
 head(cumsum(s$d^2/sum(s$d^2)))
 ```
 
-# TODO : in this case we need X components to sum more than 50% of the variance. 
+In this case we explain more than 50% of variance considering 6 principal components. 
 
 Finally, in order to get an estimate the amount of variability driven by batch, we should inspect the correlations between our batch indicator variable and the right-singular vectors in the component _v_ of _s_:
 
-# TODO, adjust the boxplots to the number of components considered before
 ```{r}
 par(mfrow=c(2, 3))
 for (i in 1:6) {
@@ -389,7 +388,7 @@ for (i in 1:6) {
 }
 ```
 
-# TODO: Interpretacion de esto???
+We can see the distribution, for each of the batch subgroups, of each of the six principal components. We can appreciate that the batch number 10 has a wider distribution across components 1, 2 and 3, while batch number 2 exhibits more variance in components 4 and 5. The results are, however, hard to interpret due to the low (and different) number of samples in each of the subgroups (eg. in the subgroup corresponding to day 192, we only have one sample), and we should not infer a batch effect from this analysis.
 
 # TODO: ADD Surrogate Variables steps???
 
@@ -438,7 +437,7 @@ eset$aged = factor(eset$aged)
 
 ```
 
-#### Fold-change
+### Fold-change
  
 To evaluate the expression levels we calculate the fold-change expression for each gene, comparing the expression levels between the surviving and non-surviving groups.
  
@@ -450,7 +449,7 @@ plot(zeroExp, oneExp, xlab = "Zero", ylab = "One", pch = ".", cex = 4, las = 1)
 plot((oneExp + zeroExp)/2, oneExp - zeroExp, pch = ".", cex = 4, las = 1)
 ```
 
-#### Significance
+### Significance
 
 We need to assess the significance of the differentially expressed genes, applying a Benjamini-Hochberg multiple test correction.
 
@@ -505,14 +504,14 @@ min(padjFDR)
 The dataset is reduced to `r nrow(eset_filtered)` genes. As seen in the result, this improves a little bit further the significance, with a minimum p-value = `r signif(min(padjFDR), digits=2)`, but still is not enough.
 
 
-#### Moderated t-test using limma
+### Moderated t-test using limma
 
 To prevent problems associated to limited replication, we use the empirical Bayes method from the Bioconductor limma package to calculate a moderated t-test that takes into account the typical standard deviation of the genes.
 
 We project our data to a linear model and calculate the moderated t-statistics.
 
 ```{r}
-#########eset_filtered <- eset_filtered[, eset_filtered$treatment == "treatment: TMZ/radiotherapy"]
+###eset_filtered <- eset_filtered[, eset_filtered$treatment == "treatment: TMZ/radiotherapy"]
 
 design <- model.matrix(~survival_time, data = eset_filtered)
 fit <- lmFit(eset_filtered, design)
@@ -534,7 +533,7 @@ points(tt[tt$adj.P.Val < 0.1, "logFC"], -log10(tt[tt$adj.P.Val < 0.1, "P.Value"]
 # abline(h=-log10(max(tt[tt$adj.P.Val < 0.1, "P.Value"])), col=grey(0.5), lty=2)
 ```
 
-#### Adjusting for covariates
+### Adjusting for covariates
 
 We can adjust for the contribution of covariates. As proposed in the paper, we adjust for MGMT methylation status and for age>50.
 
