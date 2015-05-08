@@ -1,3 +1,6 @@
+---
+output: pdf_document
+---
 # Re-analysis of the microarray data published by Murat, A. et al. (2008) "Stem Cell–Related “Self-Renewal” Signature and High Epidermal Growth Factor Receptor Expression Associated With Resistance to Concomitant Chemoradiotherapy in Glioblastoma"
 
 ### Álvaro Abella Bascarán (alvaro.abella01@estudiant.upf.edu)
@@ -138,7 +141,7 @@ We see that all samples follow a similar distribution except in the case of "u",
 
 From the two previous diagnostics, we can consider sample "u" as wrong in terms of the distribution of intensities:
 ```{r}
-badSamplesRawDistriution = "u"
+badSamplesRawDist = "u"
 ```
 
 #### Probe level modeling.
@@ -190,6 +193,10 @@ nuseDiag
 rleDiag
 ```
 As in the case of the graphical inspection, we cannot see any sample which deviates significantly from the rest.
+
+```{r}
+badSamplesRLE = c()
+```
 
 ## Normalization
 
