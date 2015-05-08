@@ -68,6 +68,7 @@ tmz_rt = samples[eset$characteristics_ch1.5 == "treatment: TMZ/radiotherapy"]
 rt = samples[eset$characteristics_ch1.5 == "treatment: radiotherapy"]
 
 # take 21 samples, keeping the proportions of the original dataset
+set.seed(123456)
 no_treated = sample(no_treated, size=1)
 tmz_rt = sample(tmz_rt, size=13)
 rt = sample(rt, size=7)
@@ -82,6 +83,9 @@ subsample_filenames = paste(subsample_names, '.cel.gz', sep='')
 
 # read only the necessary the expression data
 glioData = ReadAffy(celfile.path = "./data/raw", filenames=subsample_filenames)
+
+# display used samples:
+subsample_names
 ```
 
 We also filter the original assay data to keep only the data corresponding to the samples we have choosen. We finally save both objects for posterior use. 
@@ -95,15 +99,13 @@ saveRDS(glioData, 'glioData.rds')
 eset = subsampled_eset
 ```
 
--->
-
-## Quality assessment and normalization
+## Quality assessment
 
 ```{r}
 library(affyPLM)
 ```
 
-### Chip inspection
+#### Chip inspection
 We plot, in the first place, the chip images in order to detect artifacts and discard those samples corresponding to malfunctioning chips.
 ```{r chip_images, out.width="800px", dpi=400}
 sampleNames(glioData) = letters[1:21]
@@ -111,9 +113,10 @@ sampleNames(glioData) = letters[1:21]
 par(mfrow = c(3, 7), mar = c(1, 1, 3, 1))
 image(glioData)
 ```
+
 From this images we cannot see any obvious artifact, and so far we can consider all of the samples as valid.
 
-### Analysis of intensities
+#### Analysis of intensities
 We can further assess the quality of the samples analysing the distribution of intensities from each chip. Chips with a distribution which differs significantly from the rest (in median or dispersion) should be taken with caution.
 
 A first step is to check the distribution of raw intensities in logarithmic scale:
@@ -122,16 +125,23 @@ A first step is to check the distribution of raw intensities in logarithmic scal
 par(mar = c(4, 5, 0, 1))
 boxplot(glioData)
 ```
+From the previous boxplots we see that every sample follows a similar distribution. Sample number "u" appears to have a slightly narrower and displaced distribution, but not enough to consider it wrong.
 
 We can get some more information (eg. bimodalities) by means of a non-parametric density estimation of raw intensity values:
-```{r density_plots, out.width="800px"}
+```{r density_plots, out.width="800px", dpi=300}
 # Density plot
 par(mar = c(3, 3, 4, 1))
 plotDensity.AffyBatch(glioData, lwd=2, col=1:21, lty=1:21)
 legend('topright', LETTERS[1:21], col=1:21, lty=1:21, lwd=2, inset=0.1)
 ```
+We see that all samples follow a similar distribution except in the case of "u", which is shifted to the right and has a higher peak.
 
-### Probe level modeling.
+From the two previous diagnostics, we can consider sample "u" as wrong in terms of the distribution of intensities:
+```{r}
+badSamplesRawDistriution = "u"
+```
+
+#### Probe level modeling.
 
 We can assess the quality of Affymetrix chips using a linear model which relates the log intensities to the probe affinity effects, the array effects and the gaussian noise. Once we have the model we can represent the raw intensities (left), residuals (middle) and weights (right). 
 ```{r intensities, out.width="800px"}
@@ -144,20 +154,33 @@ for (i in 1:21) {
 }
 ```
 
-###  Normalized Unscaled Standard Errors (NUSE)
+From the previous figures we can see that sample "j" appears to have a more intense spot, maybe not enough to discard it if the rest of analysis seem to be alright.
+
+```{r}
+badSamplesPLMResids = "j"
+```
+
+####  Normalized Unscaled Standard Errors (NUSE)
 
 By means of the NUSE we examine the median and interquartile range of all probesets in the chip, to obtain an overall view of chip expression quality.
 ```{r NUSE, out.width="800px"}
 NUSE(Pset)
 ```
 
-### Relative Log Expression (RLE)
+In this case we can take as valid those samples which don't deviate from the rest by more than a 5%. As "u" is above 1.05, we can consider it as deviating from the rest.
+
+```{r}
+badSamplesNUSE = "u"
+```
+
+#### Relative Log Expression (RLE)
 Relative Log Expression Values are calculated for each of the probesets. In tis case we compare the expression on each array against the median expression value for the probeset across all of the arrays. The RLE summaries can be helpful to detect technical sources of variability that are large compared to biological variation.
 
 ```{r RLE, out.width="800px"}
 # RLE
 RLE(Pset)
 ```
+All the samples display a similar median and interquartile range, with none of them exhibiting a very noticable deviation. 
 
 Besides the graphical inspection, we can also take a look at the median and interquantile range for each sample.
 ```{r nuse_rle_stats}
@@ -166,7 +189,7 @@ rleDiag = RLE(Pset, type='stats')
 nuseDiag
 rleDiag
 ```
-
+As in the case of the graphical inspection, we cannot see any sample which deviates significantly from the rest.
 
 ## Normalization
 
@@ -176,7 +199,7 @@ In order to normalize the Affymetrix expression data we resort to the Robust Mul
 rmaEset = rma(glioData)
 ```
 
-### MA plots
+#### MA plots
 
 The MA plot can help us detect intensity dependent biases. In this case we compare (using a log ratio) the intensity of the red and green channels of the microarray (each representing a different condition). As we expect most of the genes to not be differentially expressed, most of the log ratios should be close to zero. Plotting the log ratio against the mean log intensity of both channels, we can detect dependences of the ratios on the fluorescence intensity.
 
@@ -184,6 +207,29 @@ In this case, we expect the red line to remain close to the blue one. A deviatio
 ```{r MA, out.width="800px"}
 par(mfrow=c(3, 7), mar=c(1, 1, 1, 1))
 MAplot(rmaEset[-grep('^AFFX', featureNames(rmaEset))], plot.method='smoothScatter', cex=0.75, ref.title='')
+```
+
+
+In this case we don't see any case extremely obvious, but being strict we can consider as wrong the following set of samples:
+```{r}
+badSamplesMA = c("c", "d", "o")
+```
+
+We can finally display a table showing the number of diagnostics failed by each sample:
+
+<!-- TODO: FUCKING TABLE -->
+```{r}
+qaDiag <- data.frame(RawDist = rep(FALSE, ncol(eset)), PLMresids = rep(FALSE, ncol(eset)), NUSE = rep(FALSE, ncol(eset)), RLE = rep(FALSE, ncol(eset)), MA = rep(FALSE, ncol(eset)), Failed = rep(0, ncol(eset)), row.names = sampleNames(glioData))
+
+qaDiag[badSamplesRawDist, "RawDist"] <- TRUE
+qaDiag[badSamplesPLMresids, "PLMresids"] <- TRUE
+qaDiag[badSamplesNUSE, "NUSE"] <- TRUE
+qaDiag[badSamplesRLE, "RLE"] <- TRUE
+qaDiag[badSamplesMA, "MA"] <- TRUE
+
+qaDiag$Failed <- rowSums(qaDiag)
+qaDiag <- qaDiag[order(qaDiag$Failed, decreasing = TRUE), ]
+qaDiag
 ```
 
 
