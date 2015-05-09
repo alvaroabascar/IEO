@@ -15,27 +15,10 @@ Treatment can involve chemotherapy, radiation and surgery. Median survival with 
 
 To achieve our goal, we take from the reference study a set of gene expression profiles of 80 glioblastomas of patients treated whithin clinical trials of concomitant and adjuvant temozolomide to radiotherapy (n=52) and patients treated with only radioterapy (n=28). In addition, 4 control patients were added to the study.
 
-
-This document should be processed from R and you need to install the packages
-[knitr](http://cran.r-project.org/web/packages/knitr/index.html) and
-[markdown](http://cran.r-project.org/web/packages/markdown/index.html). Once
-they are installed, you have to type the following instructions that generate
-a HTML document that you can open with a web browser:
-
-```
-library(knitr)     ## required for "knitting" from Rmd to md
-library(markdown)  ## required for processing from md to HTML
-knit("projectTemplate.Rmd", "projectTemplate.md")  ## process Rmd to md
-markdownToHTML("projectTemplate.md", "projectTemplate.html") ## process md to HTML
-browseURL("projectTemplate.html") ## open the resulting HTML file from R
-```
-
 ## Data
 The microarray data used during the research of [Murat, A. _et al_ (2008)](http://www.ncbi.nlm.nih.gov/pubmed/18565887) can be found at the [Gene Expression Omnibus](http://www.ncbi.nlm.nih.gov/geo/), with the accession number [GSE7696](http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE7696). In order to proceed with this analysis, the file [GSE7696_RAW.tar](http://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE7696&format=file) must be uncompressed under the directory 'data/raw/' and the file [GSE7696_series_matrix.txt.gz](ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE7nnn/GSE7696/matrix/GSE7696_series_matrix.txt.gz) must be placed inside 'data/'.
 
-
 ## Subsampling
-
 The original data contained 84 samples, of which 4 are controls, 28 correspond to patients treated with radiotherapy, and 52 to patients treated with both TMZ and radiotherapy. In order to have a more manageable analysis we decided to proceed, by now, with only 21 samples. The following script was used to do a subsampling keeping the original proportions among controls, TMZ/radiotherapy and radiotherapy samples.
 
 We need GEOquery to retrieve the assay data and affy to handle data from Affymetrix 3'-biased Arrays.
@@ -305,7 +288,7 @@ A nice way to see how effectively batch is confounding the outcome of interest c
 d = as.dist(1 - cor(exprs(eset), method="spearman"))
 ```
 
-Using _hclust_ we perform the hierarchical clustering which can be easily understood showing it in a [dendrogram](http://en.wikipedia.org/wiki/Dendrogram).
+Using _hclust_ we perform the hierarchical clustering which can be easily understood, showing it in a [dendrogram](http://en.wikipedia.org/wiki/Dendrogram). We are trying to identify the batch effect (the batch to which each sample belongs is indicated by the colour of the label), and a differential clustering separating samples by survival time (indicated in the sample label).
 
 ```{r}
 # Hierarchical analysis:
@@ -334,7 +317,7 @@ plot(sampleDendrogram, main = "Hierarchical clustering of samples")
 legend("topright", paste("Batch", sort(unique(batch))), fill = ourcolors)
 ```
 
-In the dendrogram we are able to see how there does not exist any batch effect confounding our outcome as the different survival times are randomly distributed and the colors (representing the batch group) do not cluster in concrete branches. 
+In this dendrogram we can see that our samples do not cluster by batch, indicating that apparently in this case we don't have batch effect. We would like to identify a separation by survival time, but it is clear that the different survivals are mixed. We don't see, so far, a relationship among different survival times and expression.
 
 ### Multidimensional Scaling
 
@@ -390,7 +373,25 @@ for (i in 1:6) {
 
 We can see the distribution, for each of the batch subgroups, of each of the six principal components. We can appreciate that the batch number 10 has a wider distribution across components 1, 2 and 3, while batch number 2 exhibits more variance in components 4 and 5. The results are, however, hard to interpret due to the low (and different) number of samples in each of the subgroups (eg. in the subgroup corresponding to day 192, we only have one sample), and we should not infer a batch effect from this analysis.
 
-# TODO: ADD Surrogate Variables steps???
+### Surrogate Variable Analysis
+
+With the SVA we try to identify sources of heterogeneity (eg. non-biological variability due to batch effects). With this analysis we should obtain an estimation of the surrogate variables and their values, which we can later use to adjust for undesirable effects.
+
+```{r}
+library(sva)
+# generation of the full model
+mod = model.matrix(~survival_time, data=pData(eset))
+head(mod)
+
+# generation of the null model
+mod0 = model.matrix(~1, data=pData(eset))
+```
+
+We can estimate the surrogate values:
+
+```{r}
+sv = sva(exprs(eset), mod, mod0)
+```
 
 
 
@@ -565,3 +566,4 @@ hist(ttadj$P.Value, xlab = "Raw P-values", breaks = 1000, main = "")
 ```{r}
 sessionInfo()
 ```
+
