@@ -403,6 +403,7 @@ head(mod)
 
 ```
 
+After the analysis conducted so far, we can assert that there is no batch effect in our samples. However, we have also seen that the samples corresponding to different survival times have clustered in a rather heterogeneous way, which might indicate a lack of relationship among gene expression and survival when we take into account all the groups at the same time.
 
 
 ## Differential expression
@@ -439,8 +440,8 @@ eset$survival_status = as.double(gsub('.*: ', '', eset$characteristics_ch1.6)) =
 eset$survival_status = factor(eset$survival_status)
 
 survival_threshold = 20
-eset$survival_time = as.double(gsub('.*: ', '', eset$characteristics_ch1.7)) > survival_threshold
-eset$survival_time = factor(eset$survival_time)
+eset$survival_time_dichotomic = as.double(gsub('.*: ', '', eset$characteristics_ch1.7)) > survival_threshold
+eset$survival_time_dichotomic = factor(eset$survival_time_dichotomic)
 
 age_threshold = 50
 eset$aged = as.double(gsub('.*: ', '', eset$characteristics_ch1.3)) > age_threshold
@@ -453,19 +454,21 @@ eset$aged = factor(eset$aged)
 To evaluate the expression levels we calculate the fold-change expression for each gene, comparing the expression levels between the surviving and non-surviving groups.
  
 ```{r}
-zeroExp <- rowMeans(exprs(eset[, eset$survival_time]))
-oneExp <- rowMeans(exprs(eset[, eset$survival_time != TRUE]))
+zeroExp <- rowMeans(exprs(eset[, eset$survival_time_dichotomic]))
+oneExp <- rowMeans(exprs(eset[, eset$survival_time_dichotomic != TRUE]))
 par(mfrow = c(1, 2))
 plot(zeroExp, oneExp, xlab = "Zero", ylab = "One", pch = ".", cex = 4, las = 1)
 plot((oneExp + zeroExp)/2, oneExp - zeroExp, pch = ".", cex = 4, las = 1)
 ```
+
+We can see that, in general, all the genes cluster together. We have certain points that deviate from the bulk, but not enough to imply an obvious differential expression. However, we can proceed with further analysis to verify this.
 
 ### Significance
 
 We need to assess the significance of the differentially expressed genes, applying a Benjamini-Hochberg multiple test correction.
 
 ```{r}
-allTests <- rowttests(eset, eset$survival_time)
+allTests <- rowttests(eset, eset$survival_time_dichotomic)
 min(allTests$p.value)
 ```
 
@@ -490,13 +493,13 @@ eset_filtered <- eset[maskHighVariability, ]
 This reduces the dataset from `r nrow(eset)` genes down to `r nrow(eset_filtered)`. Although there is an increase in significance with the lower amount of tested genes, it is still not enough, as seen on the minimal corrected p-value obtained.
 
 ```{r}
-fewerTests <- rowttests(eset_filtered, eset_filtered$survival_time)
+fewerTests <- rowttests(eset_filtered, eset_filtered$survival_time_dichotomic)
 padjFDR <- p.adjust(fewerTests$p.value, method = "BH")
 sum(padjFDR < 0.05)
 min(padjFDR)
 ```
 
-To reduce even more the number of analysed probe sets we use the _nsFilter_ function. This utility function filters out  features exhibiting little variation, or a consistently low signal, across samples, as well as features with insufficient annotation.
+We have seen how removing the genes with lower standard deviation have helped to obtain lower p-values by means of reducing the number of tests, but these are still far from the 0.05. To reduce even more the number of analysed probe sets we use the _nsFilter_ function. This utility function filters out  features exhibiting little variation, or a consistently low signal, across samples, as well as features with insufficient annotation.
 
 ```{r}
 filtered <- nsFilter(eset_filtered, require.entrez=TRUE,
@@ -506,14 +509,13 @@ filtered <- nsFilter(eset_filtered, require.entrez=TRUE,
          var.cutoff=0.5, var.filter=TRUE,
          filterByQuantile=TRUE, feature.exclude="^AFFX")
 eset_filtered <- filtered$eset
-fewerTests <- rowttests(eset_filtered, eset_filtered$survival_time)
+fewerTests <- rowttests(eset_filtered, eset_filtered$survival_time_dichotomic)
 padjFDR <- p.adjust(fewerTests$p.value, method = "BH")
 sum(padjFDR < 0.05)
 min(padjFDR)
 ```
 
-The dataset is reduced to `r nrow(eset_filtered)` genes. As seen in the result, this improves a little bit further the significance, with a minimum p-value = `r signif(min(padjFDR), digits=2)`, but still is not enough.
-
+The dataset is reduced to `r nrow(eset_filtered)` genes. As seen in the result, now the lowest p-value is higher than in the previous case. It is obvious that the corresponding gene was removed by the function nsFilter, maybe due to a low signal or a deficient annotation.
 
 ### Moderated t-test using limma
 
@@ -522,9 +524,7 @@ To prevent problems associated to limited replication, we use the empirical Baye
 We project our data to a linear model and calculate the moderated t-statistics.
 
 ```{r}
-###eset_filtered <- eset_filtered[, eset_filtered$treatment == "treatment: TMZ/radiotherapy"]
-
-design <- model.matrix(~survival_time, data = eset_filtered)
+design <- model.matrix(~survival_time_dichotomic, data = eset_filtered)
 fit <- lmFit(eset_filtered, design)
 fit <- eBayes(fit)
 res <- decideTests(fit, p.value = 0.1)
@@ -538,11 +538,19 @@ tt <- topTable(fit, coef = 2, n = Inf)
 par(mfrow = c(1, 2), mar = c(4, 5, 2, 2))
 hist(tt$P.Value, xlab = "Raw P-values", main = "")
 hist(tt$P.Value, xlab = "Raw P-values", breaks = 1000, main = "")
-
-plot(tt$logFC, -log10(tt$P.Value), pch=".", cex=4, col=grey(0.75), cex.axis=1.2, las=1, cex.lab=1.5, xlab=expression(paste(log[2], " Fold change")), ylab=expression(paste(-log[10], " P-value")))
-points(tt[tt$adj.P.Val < 0.1, "logFC"], -log10(tt[tt$adj.P.Val < 0.1, "P.Value"]), pch=".", cex=4, col="red")
-# abline(h=-log10(max(tt[tt$adj.P.Val < 0.1, "P.Value"])), col=grey(0.5), lty=2)
 ```
+
+This distribution appears to be slightly negatively skewed (more density of p-values near 1). Adjusting for covariates we will be able to reduce this effect and obtain a more uniform distribution.
+
+```{r out.width="600px"}
+plot(tt$logFC, -log10(tt$P.Value), pch=".", cex=4, col=grey(0.75), cex.axis=1.2, las=1, cex.lab=1.5, xlab=expression(paste(log[2], " Fold change")), ylab=expression(paste(-log[10], " P-value")))
+if (sum(tt$adj.P.Val < 0.1) > 0) {
+  abline(h=-log10(max(tt[tt$adj.P.Val < 0.1, "P.Value"])), col=grey(0.5), lty=2)
+}
+points(tt[tt$adj.P.Val < 0.1, "logFC"], -log10(tt[tt$adj.P.Val < 0.1, "P.Value"]), pch=".", cex=4, col="red")
+```
+
+If we had p-values lower than 0.1, we would be able to see a line separating the differentially (above the line) and non-differentially (below the line) expressed genes. However, in this case our minimum p-value is higher than this threshold of 0.1.
 
 ### Adjusting for covariates
 
@@ -553,7 +561,7 @@ eset_filtered$mgmtM = eset_filtered$mgmt == "mgmt status: M"
 
 # Surrogate Variables
 # adjusted for age (> 50 years) and MGMT methylation status
-mod <- model.matrix(~survival_status + mgmtM + aged, data = eset_filtered)
+mod <- model.matrix(~survival_time_dichotomic + mgmtM + aged, data = eset_filtered)
 mod0 <- model.matrix(~ mgmtM + aged, data = eset_filtered)
 
 svaobj <- sva(exprs(eset_filtered), mod, mod0)
@@ -569,7 +577,35 @@ hist(ttadj$P.Value, xlab = "Raw P-values", main = "")
 hist(ttadj$P.Value, xlab = "Raw P-values", breaks = 1000, main = "")
 ```
 
+Now we can see that the distribution is much closer to uniform. We can do again a volcano plot to check if the significances have changed.
+
+```{r out.width="600px"}
+plot(ttadj$logFC, -log10(ttadj$P.Value), pch=".", cex=4, col=grey(0.75), cex.axis=1.2, las=1, cex.lab=1.5, xlab=expression(paste(log[2], " Fold change")), ylab=expression(paste(-log[10], " P-value")))
+if (sum(ttadj$adj.P.Val < 0.1) > 0) {
+  abline(h=-log10(max(ttadj[ttadj$adj.P.Val < 0.1, "P.Value"])), col=grey(0.5), lty=2)
+}
+points(ttadj[ttadj$adj.P.Val < 0.1, "logFC"], -log10(ttadj[ttadj$adj.P.Val < 0.1, "P.Value"]), pch=".", cex=4, col="red")
+```
+
+Still, we have no significant genes.
+
 ## Conclusion
+
+During this analysis we have explored the data provided by Murat, A. et al. (2008). We have performed a quality assessment, ensuring that the samples have enough quality to proceed with the analysis. In addition, we have tried to identify sources of batch effect, concluding that these samples are not affected by this type of technical bias. Finally, we have made a first attempt to detect differentially expressed genes on two groups of samples: those corresponding to patients with a survival above and below 20 months.
+
+The analysis of differential expression has revealed no significant genes. However, we have made the analysis jointly for both TMZ/radiotherapy and radiotherapy sample groups. One possible explanation for the lack of significant results is that the genes affecting survival time are different in each kind of treatment. This suggest that the next step is to analyze separately both sample groups.
+
+The analysis by Murat, A. et al. includes a process of gene clustering using CTWC ([see their gene clusters here](http://bcf.isb-sib.ch/projects/cancer/glio/Results-56231395/index.html)), leading to a reduced set that is key to obtain statistically significant results. In our case we have tested each gene separately, an approach with a much lower statistical power.
+
+## Future steps
+
+A similar analysis could be performed analyzing the differential expression separately for TMZ/radiotherapy and radiotherapy samples. Moreover, we could do the analysis including all of the 81 samples, instead of using a reduced set of just 21 samples, which might reveal more significant genes. 
+
+In addition, as each samples has several phenotipical characteristics, it might be interesting to perform the previous analysis focusing on a variable different from the survival time.
+
+More importantly, we could study the possibility to use a clustering technique to group related genes in order to improve the statistical significance, as we will be considering biological and functional aspects.
+
+
 
 ## Session information
 
