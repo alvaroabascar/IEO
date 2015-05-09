@@ -108,23 +108,27 @@ for (i in 1:6) {
 
 # SURROGATE VARIABLE ANALYSIS
 
+# Generating a full model
 mod <- model.matrix(~survival_time, data = pData(eset))
 head(mod)
 
+# Generating the null model
 mod0 <- model.matrix(~1, data = pData(eset))
 
 # surrogate variables calling
 sv <- sva(exprs(eset), mod, mod0)
 
+# Plot the correlations
 par(mfrow = c(2, 5))
 for (i in 1:sv$n.sv) boxplot(sv$sv[, i] ~ batch, main = sprintf("SV %d", i), xlab = "Batch")
 
-
+# Numbero of genes changing
 pValues <- f.pvalue(exprs(eset), mod, mod0)
 sum(p.adjust(pValues, method = "BH") < 0.05)
 
 dim(eset)
 
+# Changes after adjustment
 modSv <- cbind(mod, sv$sv)
 mod0Sv <- cbind(mod0, sv$sv)
 pValuesSv <- f.pvalue(exprs(eset), modSv, mod0Sv)
