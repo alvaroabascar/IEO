@@ -15,10 +15,27 @@ Treatment can involve chemotherapy, radiation and surgery. Median survival with 
 
 To achieve our goal, we take from the reference study a set of gene expression profiles of 80 glioblastomas of patients treated whithin clinical trials of concomitant and adjuvant temozolomide to radiotherapy (n=52) and patients treated with only radioterapy (n=28). In addition, 4 control patients were added to the study.
 
+
+This document should be processed from R and you need to install the packages
+[knitr](http://cran.r-project.org/web/packages/knitr/index.html) and
+[markdown](http://cran.r-project.org/web/packages/markdown/index.html). Once
+they are installed, you have to type the following instructions that generate
+a HTML document that you can open with a web browser:
+
+```
+library(knitr)     ## required for "knitting" from Rmd to md
+library(markdown)  ## required for processing from md to HTML
+knit("projectTemplate.Rmd", "projectTemplate.md")  ## process Rmd to md
+markdownToHTML("projectTemplate.md", "projectTemplate.html") ## process md to HTML
+browseURL("projectTemplate.html") ## open the resulting HTML file from R
+```
+
 ## Data
 The microarray data used during the research of [Murat, A. _et al_ (2008)](http://www.ncbi.nlm.nih.gov/pubmed/18565887) can be found at the [Gene Expression Omnibus](http://www.ncbi.nlm.nih.gov/geo/), with the accession number [GSE7696](http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE7696). In order to proceed with this analysis, the file [GSE7696_RAW.tar](http://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE7696&format=file) must be uncompressed under the directory 'data/raw/' and the file [GSE7696_series_matrix.txt.gz](ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE7nnn/GSE7696/matrix/GSE7696_series_matrix.txt.gz) must be placed inside 'data/'.
 
+
 ## Subsampling
+
 The original data contained 84 samples, of which 4 are controls, 28 correspond to patients treated with radiotherapy, and 52 to patients treated with both TMZ and radiotherapy. In order to have a more manageable analysis we decided to proceed, by now, with only 21 samples. The following script was used to do a subsampling keeping the original proportions among controls, TMZ/radiotherapy and radiotherapy samples.
 
 We need GEOquery to retrieve the assay data and affy to handle data from Affymetrix 3'-biased Arrays.
@@ -104,7 +121,7 @@ par(mfrow = c(3, 7), mar = c(1, 1, 3, 1))
 image(glioData)
 ```
 
-From this images we cannot see any obvious artifact, and so far we can consider all of the samples as valid.
+From these images we cannot see any obvious artifact, and so far we can consider all of the samples as valid.
 
 ### Analysis of intensities
 We can further assess the quality of the samples analysing the distribution of intensities from each chip. Chips with a distribution which differs significantly from the rest (in median or dispersion) should be taken with caution.
@@ -115,6 +132,7 @@ A first step is to check the distribution of raw intensities in logarithmic scal
 par(mar = c(4, 5, 0, 1))
 boxplot(glioData)
 ```
+
 From the previous boxplots we see that every sample follows a similar distribution. Sample number "u" appears to have a slightly narrower and displaced distribution, but not enough to consider it wrong.
 
 We can get some more information (eg. bimodalities) by means of a non-parametric density estimation of raw intensity values:
@@ -379,31 +397,10 @@ With the SVA we try to identify sources of heterogeneity (eg. non-biological var
 
 ```{r}
 library(sva)
-# generation of the full model
+# generation o
 mod = model.matrix(~survival_time, data=pData(eset))
 head(mod)
 
-# generation of the null model
-mod0 = model.matrix(~1, data=pData(eset))
-```
-
-We can estimate the surrogate values:
-
-```{r}
-sv = sva(exprs(eset), mod, mod0)
-```
-
-Finally we can examine whether any of the surrogate variables that we obtained in the previous block relates with any possible source of non-biological variability:
-```{r}
-# Plot the correlations
-# par(mfrow = c(2, 5))
-# for (i in 1:sv$n.sv) boxplot(sv$sv[, i] ~ batch, main = sprintf("SV %d", i), xlab = "Batch")
-
-# Number of genes changing
-# pValues <- f.pvalue(exprs(eset), mod, mod0)
-# sum(p.adjust(pValues, method = "BH") < 0.05)
-
-# dim(eset)
 ```
 
 
@@ -426,7 +423,6 @@ annotation(eset)<-'hgu133plus2.db'
 First we setup the input data in a format suitable for the analysis.
 
 ```{r}
-# Control patients have no survival time, so we must remove them to proceed with the analysis
 eset = eset[, eset$characteristics_ch1.6 != "survival status: NA"] # Remove control patients
 eset$characteristics_ch1.1 = factor(eset$characteristics_ch1.1) # disease status: re-recurrent GBM
 eset$characteristics_ch1.2 = factor(eset$characteristics_ch1.2) # patient id
@@ -451,8 +447,6 @@ eset$aged = as.double(gsub('.*: ', '', eset$characteristics_ch1.3)) > age_thresh
 eset$aged = factor(eset$aged)
 
 ```
-
-In this case we see how all genes are clustering around the diagonal, and we cannot appreciate any one specially deviated. This suggest that we don't have any gene with an obvious differential expression. In the right graph we can see how some genes deviate from the bulk, but maybe not enough to consider them as differentially expressed. However, to verify this, we can perform some additional analysis.
 
 ### Fold-change
  
@@ -549,8 +543,6 @@ plot(tt$logFC, -log10(tt$P.Value), pch=".", cex=4, col=grey(0.75), cex.axis=1.2,
 points(tt[tt$adj.P.Val < 0.1, "logFC"], -log10(tt[tt$adj.P.Val < 0.1, "P.Value"]), pch=".", cex=4, col="red")
 # abline(h=-log10(max(tt[tt$adj.P.Val < 0.1, "P.Value"])), col=grey(0.5), lty=2)
 ```
-In the volcano plot we should see a red
-
 
 ### Adjusting for covariates
 
@@ -584,4 +576,3 @@ hist(ttadj$P.Value, xlab = "Raw P-values", breaks = 1000, main = "")
 ```{r}
 sessionInfo()
 ```
-
