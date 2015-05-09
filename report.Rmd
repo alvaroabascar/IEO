@@ -393,6 +393,19 @@ We can estimate the surrogate values:
 sv = sva(exprs(eset), mod, mod0)
 ```
 
+Finally we can examine whether any of the surrogate variables that we obtained in the previous block relates with any possible source of non-biological variability:
+```{r}
+# Plot the correlations
+# par(mfrow = c(2, 5))
+# for (i in 1:sv$n.sv) boxplot(sv$sv[, i] ~ batch, main = sprintf("SV %d", i), xlab = "Batch")
+
+# Number of genes changing
+# pValues <- f.pvalue(exprs(eset), mod, mod0)
+# sum(p.adjust(pValues, method = "BH") < 0.05)
+
+# dim(eset)
+```
+
 
 
 ## Differential expression
@@ -413,6 +426,7 @@ annotation(eset)<-'hgu133plus2.db'
 First we setup the input data in a format suitable for the analysis.
 
 ```{r}
+# Control patients have no survival time, so we must remove them to proceed with the analysis
 eset = eset[, eset$characteristics_ch1.6 != "survival status: NA"] # Remove control patients
 eset$characteristics_ch1.1 = factor(eset$characteristics_ch1.1) # disease status: re-recurrent GBM
 eset$characteristics_ch1.2 = factor(eset$characteristics_ch1.2) # patient id
@@ -437,6 +451,8 @@ eset$aged = as.double(gsub('.*: ', '', eset$characteristics_ch1.3)) > age_thresh
 eset$aged = factor(eset$aged)
 
 ```
+
+In this case we see how all genes are clustering around the diagonal, and we cannot appreciate any one specially deviated. This suggest that we don't have any gene with an obvious differential expression. In the right graph we can see how some genes deviate from the bulk, but maybe not enough to consider them as differentially expressed. However, to verify this, we can perform some additional analysis.
 
 ### Fold-change
  
@@ -533,6 +549,8 @@ plot(tt$logFC, -log10(tt$P.Value), pch=".", cex=4, col=grey(0.75), cex.axis=1.2,
 points(tt[tt$adj.P.Val < 0.1, "logFC"], -log10(tt[tt$adj.P.Val < 0.1, "P.Value"]), pch=".", cex=4, col="red")
 # abline(h=-log10(max(tt[tt$adj.P.Val < 0.1, "P.Value"])), col=grey(0.5), lty=2)
 ```
+In the volcano plot we should see a red
+
 
 ### Adjusting for covariates
 
