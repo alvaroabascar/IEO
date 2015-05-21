@@ -6,11 +6,11 @@ library(genefilter)
 library(limma)
 library(sva)
 
-#glioData = readRDS('glioData.rds')
-#eset = readRDS('eset.rds')
-glioData = readRDS('full_glioData.rds')
-eset = readRDS('full_eset.rds')
-#sampleNames(glioData) = letters[1:ncol(eset)]
+glioData = readRDS('rma_glioData.rds')
+eset = readRDS('eset.rds')
+
+nsamples = length(sampleNames(glioData))
+sampleNames(glioData) = as.character(c(1:nsamples))
 
 eset = eset[, eset$characteristics_ch1.6 != "survival status: NA"]
 eset$characteristics_ch1.1 = factor(eset$characteristics_ch1.1) # disease status: re-recurrent GBM
@@ -27,7 +27,7 @@ eset$treatment = eset$characteristics_ch1.5
 eset$survival_status = as.double(gsub('.*: ', '', eset$characteristics_ch1.6)) == 1
 eset$survival_status = factor(eset$survival_status)
 
-survival_threshold = 20
+survival_threshold = 18
 eset$survival_time = as.double(gsub('.*: ', '', eset$characteristics_ch1.7)) > survival_threshold
 eset$survival_time = factor(eset$survival_time)
 
@@ -77,7 +77,7 @@ maskHighVariability_sd <- apply(exprs(eset), 1, sd)>0.75
 mask = maskHighVariability & maskHighVariability_sd
 eset_filtered <- eset[mask, ]
 
-# Again: 
+# Again:
 
 fewerTests <- rowttests(eset_filtered, eset_filtered$survival_status)
 padjBonf <- p.adjust(fewerTests$p.value, method = "bonferroni")
@@ -86,7 +86,7 @@ padjBonf <- p.adjust(fewerTests$p.value, method = "bonferroni")
 padjFDR <- p.adjust(fewerTests$p.value, method = "BH")
 #sum(padjFDR < 0.01)
 
-# To reduce even more the numbero of analysed probe sets 
+# To reduce even more the number of analysed probe sets 
 # by using the nsFilter function. From the nsFilter help page:
 # "Filtering features exhibiting little variation, or
 #     a consistently low signal, across samples can be advantageous for

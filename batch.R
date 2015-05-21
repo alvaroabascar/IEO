@@ -3,11 +3,15 @@ library(Biobase)
 library(corpcor)
 library(sva)
 
-# glioData = ReadAffy(celfile.path = "./data")
-# eset = readRDS('full_eset.rds')
-glioData = readRDS('glioData.rds')
+if (!file.exists('figures/batch')) {
+  dir.create('figures/batch')
+}
+
+glioData = readRDS('rma_glioData.rds')
 eset = readRDS('eset.rds')
-sampleNames(glioData) = letters[1:21]
+nsamples = length(sampleNames(glioData))
+
+sampleNames(glioData) = as.character(c(1:nsamples))
 
 scanDate = protocolData(glioData)$ScanDate
 scanDate = gsub(" .*", "", scanDate)
@@ -48,9 +52,10 @@ sampleDendrogram = dendrapply(sampleDendrogram, function(x, batch, labels) {
     x
 }, batch, survival_time)
 
+png('figures/batch/dendogram.png')
 plot(sampleDendrogram, main = "Hierarchical clustering of samples")
 legend("topright", paste("Batch", sort(unique(batch))), fill = ourcolors)
-
+dev.off()
 
 # MULTIDIMENSIONAL SCALING (MDS)
 
@@ -59,10 +64,11 @@ dim(cmd)
 head(cmd)
 
 # Ploting the results
+png('figures/batch/MDS.png')
 plot(cmd, type = "n")
 text(cmd, survival_time, col = ourcolors[batch_days[as.character(batch),]], cex = 0.9)
 legend("topleft", paste("Batch", unique(batch)), fill = ourcolors[batch_days[as.character(unique(batch)),]], inset = 0.01)
-
+dev.off()
 
 # # Protocol to perform the Batch effect detection with only a concrete group, 
 # # in the example we select a range of survival times smaller than 20 months.
@@ -96,18 +102,22 @@ legend("topleft", paste("Batch", unique(batch)), fill = ourcolors[batch_days[as.
 
 # Plot of proportion of variance explained perprincipal component
 s = fast.svd(t(scale(t(exprs(eset)), center=TRUE, scale=TRUE)))
+png('figures/batch/svd.png')
 plot(s$d^2/sum(s$d^2), type="b", lwd=2, las=1, xlab="Principal component", ylab="Proportion of variance")
+dev.off()
 
 
 # Boxplots:
+png('figures/batch/boxplots.png')
 par(mfrow=c(2, 3))
 for (i in 1:6) {
   boxplot(split(s$v[, i], batch), main=sprintf("PC%d %.0f%%", i, 100 * s$d[i]^2/sum(s$d^2)))
 }
+dev.off()
 
 
 # SURROGATE VARIABLE ANALYSIS
-st_bin <- ifelse(survival_time >= 20, 1, 0)
+st_bin <- ifelse(survival_time >= 18, 1, 0)
 # Generating a full model
 mod <- model.matrix(~st_bin, data = pData(eset))
 head(mod)
@@ -119,10 +129,12 @@ mod0 <- model.matrix(~1, data = pData(eset))
 sv <- sva(exprs(eset), mod, mod0)
 
 # Plot the correlations
+png('figures/batch/correlations.png')
 par(mfrow = c(2, 3))
 for (i in 1:sv$n.sv) boxplot(sv$sv[, i] ~ batch, main = sprintf("SV %d", i), xlab = "Batch")
+dev.off()
 
-# Numbero of genes changing
+# Number of genes changing
 pValues <- f.pvalue(exprs(eset), mod, mod0)
 sum(p.adjust(pValues, method = "BH") < 0.05)
 

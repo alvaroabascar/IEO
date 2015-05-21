@@ -14,17 +14,18 @@ if (file.exists('full_eset.rds')) {
 samples = colnames(eset)
 
 # separate the samples by treatment group
-no_treated = samples[eset$characteristics_ch1.5 == "treatment: NA"]
+#no_treated = samples[eset$characteristics_ch1.5 == "treatment: NA"]
 tmz_rt = samples[eset$characteristics_ch1.5 == "treatment: TMZ/radiotherapy"]
-rt = samples[eset$characteristics_ch1.5 == "treatment: radiotherapy"]
+#rt = samples[eset$characteristics_ch1.5 == "treatment: radiotherapy"]
 
 # take 21 samples, keeping the proportions of the original dataset
 set.seed(123456)
-no_treated = sample(no_treated, size=1)
-tmz_rt = sample(tmz_rt, size=13)
-rt = sample(rt, size=7)
+#no_treated = sample(no_treated, size=1)
+#tmz_rt = sample(tmz_rt, size=13)
+#rt = sample(rt, size=7)
 
-subsample_names = c(no_treated, tmz_rt, rt)
+#subsample_names = c(no_treated, tmz_rt, rt)
+subsample_names = c(tmz_rt)
 # turn sample names into filenames
 subsample_filenames = paste(subsample_names, '.cel.gz', sep='')
 

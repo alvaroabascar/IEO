@@ -1,11 +1,12 @@
 library(affyPLM)
 
 glioData = readRDS('glioData.rds')
-sampleNames(glioData) = letters[1:21]
+nsamples = length(sampleNames(glioData))
+sampleNames(glioData) = as.character(c(1:nsamples))
 
 # Scanner plot analysis
 png('figures/qa/scannerplot.png', width=4, height=4, units='in', res=500)
-par(mfrow = c(3, 7), mar = c(1, 1, 3, 1))
+par(mfrow = c(3, round(nsamples/3)), mar = c(1, 1, 3, 1))
 image(glioData)
 dev.off()
 
