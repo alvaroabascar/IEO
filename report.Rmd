@@ -438,7 +438,6 @@ We do not see any gene with a significant change between the full and null model
 
 After the analysis conducted so far, we can assert that there is no batch effect in our samples. However, we have also seen that the samples corresponding to different survival times have clustered in a rather heterogeneous way, which might indicate a lack of relationship among gene expression and survival when we take into account all the groups at the same time.
 
-
 ## Differential expression
 
 With the aim to identify changes in gene expression associated to a specific condition, we perform a gene differential expression analysis. The condition in this analysis is the survivavility of the tumoral condition in patients treated with concomitant chemoradiotherapy(TMZ/RT->TMZ).
