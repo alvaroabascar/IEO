@@ -63,7 +63,8 @@ hist(ttadj$P.Value, xlab = "Raw P-values", main = "")
 hist(ttadj$P.Value, xlab = "Raw P-values", breaks = 1000, main = "")
 
 ###### COX
-
+pvalues = c()
+nm = c()
 for (rn in rownames(GSeset)) {
   g_eset = GSeset[rn,]
   survival_time = as.double(gsub('.*: ', '', g_eset$characteristics_ch1.7))
@@ -74,5 +75,10 @@ for (rn in rownames(GSeset)) {
   exprs_vals=as.vector(exprs(g_eset))
   cox_df = data.frame(exprs_vals=exprs_vals, mgmt=mgmt, aged=aged, survival_time=survival_time, survival_status=survival_status)
   cox_result=coxph(Surv(survival_time, survival_status)~exprs_vals+mgmt+aged, cox_df)
-  print(cox_result)
+  #print(cox_result)
+  #pvalues = c(pvalues, summary(cox_result)$waldtest[3])
+  pvalues = c(pvalues, summary(cox_result)$coefficients[1,5])
+  nm = c(nm, rn)
 }
+
+stable_clusters = c("G2", "G7", "G9", "G11", "G12", "G13", "G14", "G16", "G18", "G12", "G21", "G22", "G23", "G24", "G25", "G27", "G28", "G29")
