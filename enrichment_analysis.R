@@ -11,15 +11,16 @@ glioData = readRDS('rma_glioData.rds')
 eset = readRDS('eset.rds')
 annotation(eset)<-'hgu133plus2.db'
 
-g28_ids = as.character(read.csv('cluster_g28.csv', header=FALSE)$V3)
-g98_ids = as.character(read.csv('cluster_g98.csv', header=FALSE)$V3)
+clusters = read.csv('scrap_clusters/clusters.csv', header=TRUE)
 
-g28 = GeneSet(AnnotationIdentifier("hgu133plus2.db"), geneIds=g28_ids, setName="G28")
-g98 = GeneSet(AnnotationIdentifier("hgu133plus2.db"), geneIds=g98_ids, setName="G98")
-details(g28)
-details(g98)
+all_genesets = c()
+for (cluster_name in levels(clusters$cluster)) {
+    gene_ids = as.character(clusters[clusters$cluster == cluster_name,]$geneId)
+    cluster = GeneSet(AnnotationIdentifier("hgu133plus2.db"), geneIds=gene_ids, setName=cluster_name)
+    all_genesets = c(all_genesets, cluster)
+}
 
-cluster_collection = GeneSetCollection(g28, g98)
+cluster_collection = GeneSetCollection(all_genesets)
 cluster_collection
 length(cluster_collection)
 head(names(cluster_collection))
@@ -54,7 +55,7 @@ modSVs <- cbind(mod, svaobj$sv)
 
 fit <- lmFit(GSeset, modSVs)
 fit <- eBayes(fit)
-ttadj <- topTable(fit, coef = 2, n = Inf)
+ttadj <- topTable(fit, coef = 2, n = Inf, adjust.method="bonferroni")
 
 png('figures/diff_exp/p_values_distr_after_sva.png', width=14, height=6, units='in', res=700)
 par(mfrow = c(1, 2), mar = c(4, 5, 2, 2))
