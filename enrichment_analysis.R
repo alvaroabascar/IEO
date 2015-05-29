@@ -61,3 +61,18 @@ png('figures/diff_exp/p_values_distr_after_sva.png', width=14, height=6, units='
 par(mfrow = c(1, 2), mar = c(4, 5, 2, 2))
 hist(ttadj$P.Value, xlab = "Raw P-values", main = "")
 hist(ttadj$P.Value, xlab = "Raw P-values", breaks = 1000, main = "")
+
+###### COX
+
+for (rn in rownames(GSeset)) {
+  g_eset = GSeset[rn,]
+  survival_time = as.double(gsub('.*: ', '', g_eset$characteristics_ch1.7))
+  survival_status = as.double(gsub('.*: ', '', g_eset$characteristics_ch1.6)) == 1
+  mgmt = g_eset$characteristics_ch1.8 == "mgmt status: M"
+  age_threshold = 50
+  aged = as.double(gsub('.*: ', '', g_eset$characteristics_ch1.3)) > age_threshold
+  exprs_vals=as.vector(exprs(g_eset))
+  cox_df = data.frame(exprs_vals=exprs_vals, mgmt=mgmt, aged=aged, survival_time=survival_time, survival_status=survival_status)
+  cox_result=coxph(Surv(survival_time, survival_status)~exprs_vals+mgmt+aged, cox_df)
+  print(cox_result)
+}
