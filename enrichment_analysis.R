@@ -61,3 +61,52 @@ png('figures/diff_exp/p_values_distr_after_sva.png', width=14, height=6, units='
 par(mfrow = c(1, 2), mar = c(4, 5, 2, 2))
 hist(ttadj$P.Value, xlab = "Raw P-values", main = "")
 hist(ttadj$P.Value, xlab = "Raw P-values", breaks = 1000, main = "")
+
+## Geneset overlap
+
+library(GSVA)
+gsov <- computeGeneSetsOverlap(cluster_collection, rownames(eset))
+# trimask <- upper.tri(gsov)
+# rnkOv <- data.frame(gs1 = row(gsov)[trimask], gs2 = col(gsov)[trimask], ov = gsov[trimask])
+# rnkOv <- rnkOv[order(rnkOv$ov, decreasing = FALSE), ]
+# rnkOv$gs1 <- rownames(gsov)[rnkOv$gs1]
+# rnkOv$gs2 <- rownames(gsov)[rnkOv$gs2]
+# 
+# sum(rnkOv$ov == 1)
+# ## how many pairs of gene sets are identical?
+# 
+# sum(rnkOv$ov < 0.05)
+# ## how many pairs of gene sets share less than 5% of the genes?
+
+rnkOv_list = sort(rowMeans(gsov))
+non_overlapped_clusters = c(rnkOv_list[1])
+for (i in 2:length(rnkOv_list)) {
+  if (max(gsov[i, non_overlapped_clusters]) < 0.05) {
+    non_overlapped_clusters = c(non_overlapped_clusters, rownames(gsov)[i])
+  }
+}
+
+###### COX
+pvalues = c()
+nm = c()
+for (rn in rownames(GSeset)) {
+  g_eset = GSeset[rn,]
+  survival_time = as.double(gsub('.*: ', '', g_eset$characteristics_ch1.7))
+  survival_status = as.double(gsub('.*: ', '', g_eset$characteristics_ch1.6)) == 1
+  mgmt = g_eset$characteristics_ch1.8 == "mgmt status: M"
+  age_threshold = 50
+  aged = as.double(gsub('.*: ', '', g_eset$characteristics_ch1.3)) > age_threshold
+  exprs_vals=as.vector(exprs(g_eset))
+  cox_df = data.frame(exprs_vals=exprs_vals, mgmt=mgmt, aged=aged, survival_time=survival_time, survival_status=survival_status)
+  cox_result=coxph(Surv(survival_time, survival_status)~exprs_vals+mgmt+aged, cox_df)
+  #print(cox_result)
+  #pvalues = c(pvalues, summary(cox_result)$waldtest[3])
+  pvalues = c(pvalues, summary(cox_result)$coefficients[1,5])
+  nm = c(nm, rn)
+}
+
+pvalues_df = data.frame(pvalues=pvalues, cluster=nm)
+stable_clusters = c("G2", "G7", "G9", "G11", "G12", "G13", "G14", "G16", "G18", "G12", "G21", "G22", "G23", "G24", "G25", "G27", "G28", "G29")
+stable_pvalues_df = pvalues_df[pvalues_df$cluster %in% stable_clusters,]
+
+stable_pvalues_df$P.adj = p.adjust(p=stable_pvalues_df$pvalues, method="BH") 

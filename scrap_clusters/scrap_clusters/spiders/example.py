@@ -7,7 +7,7 @@ class ExampleSpider(scrapy.Spider):
     name = "clusters"
     allowed_domains = ["bcf.isb-sib.ch"]
     start_urls = [
-        'http://bcf.isb-sib.ch/projects/cancer/glio/Results-56231395/rows/G%d_using.html' %i 
+        'http://bcf.isb-sib.ch/projects/cancer/glio/Results-56231395/rows/G%d_using.html' %(i+1) 
         for i in range(420)]
 
     def parse(self, response):
