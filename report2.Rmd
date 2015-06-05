@@ -609,22 +609,18 @@ Therefore, our goal is to generate _gene sets_ following the steps:
 
 ### Gene Ontology analysis
 
-In order to do this we performa a _Gene Ontology Analysis_:
+In order to do this we performa a _Gene Ontology Analysis_. We start searching for DE genes at 10% FDR between recurrent and non-recurrent samples from the results obtained using Limma in the previous step:
 
 ```{r}
-library(org.Hs.eg.db)
+library(hgu133a.db)
 
-allHumanGO <- select(org.Hs.eg.db, columns = "GO", key = keys(org.Hs.eg.db, keytype = "SYMBOL"), keytype = "SYMBOL")
-dim(allHumanGO)
-
-sort(table(allHumanGO$EVIDENCE), decreasing = TRUE)
-```
-
-We start searching for DE genes at 10% FDR between recurrent and non-recurrent samples from the results obtained using Limma in the previous step:
-
-```{r}
 DEgenes <- rownames(ttadj[ttadj$adj.P.Val < 0.1, , drop = FALSE])
 length(DEgenes)
+
+# Select gene ID in database
+DEgenes_indb <- select(hgu133plus2.db, DEgenes, "ENTREZID", "PROBEID")
+
+universeIDs <- select(hgu133plus2.db, featureNames(eset_filtered), "ENTREZID", "PROBEID")
 ```
 
 We see we have `r length(DEgenes)` differentially expressed. In order to define the gene ontology terms we use the _GOStats_ package. 
@@ -635,7 +631,8 @@ But we have to take into account one thing, a problem in a GO analysis is the hi
 library(GOstats)
 
 # Begin building a parameter object as follows
-params <- new("GOHyperGParams", geneIds = DEgenes, universeGeneIds = featureNames(filtered_eset), annotation = "org.Hs.eg.db", ontology = "BP", pvalueCutoff = 0.05, testDirection = "over")
+params <- new("GOHyperGParams", geneIds = DEgenes_indb$ENTREZID, universeGeneIds = universeIDs$ENTREZID, annotation = "hgu133plus2.db", ontology = "BP", pvalueCutoff = 0.05, testDirection = "over")
+
 conditional(params) <- TRUE  #To consider the conditional test
 
 # Run the functional enrichment analysis.
@@ -643,17 +640,19 @@ hgOverCond <- hyperGTest(params)
 hgOverCond
 
 # And store and visualize the results.
-htmlReport(hgOver, file = "gotests.html")
-# browseURL("gotests.html")
+htmlReport(hgOverCond, file = "gocondtests.html")
+# browseURL("gocondtests.html")
 ```
+
+# TODO : Alguna forma de añadir ese html como links y explicar mas o menos que se ve!
 
 The resulting object from a call to hyperGTest() belongs to the class of objects GOHyperGResult. We can find out what methods are available to explore the results in detail. A few of the more useful ones are:
 
 ```{r}
-head(summary(hgOver), n = 3)
-head(geneCounts(hgOver)) 
-head(universeCounts(hgOver))
-head(pvalues(hgOver))
+head(summary(hgOverCond), n = 3)
+head(geneCounts(hgOverCond)) 
+head(universeCounts(hgOverCond))
+head(pvalues(hgOverCond))
 ```
 
 We inspect our results:
@@ -691,6 +690,10 @@ library(xtable)
 xtab <- xtable(goresults, align = "l|c|r|r|r|r|r|p{3cm}|p{3cm}|")
 print(xtab, file = "goresults.html", type = "html")
 ```
+
+#TODO : de nuevo, tratar de linkear este html y poner un poc que tienen los genes que aparecen
+
+
 
 ##Session information
 
