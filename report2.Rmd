@@ -230,7 +230,7 @@ qaDiag <- qaDiag[order(qaDiag$Failed, decreasing = TRUE), ]
 qaDiag
 ```
 
-In general we have achieved very good results as none of the samples fail more than 2 tests so we decide to continue the study with all the samples. For future analysis considering the whole data set (>80) we could repeat this process and take only the best samples. 
+In general we have achieved very good results as none of the samples fail more than 1 tests so we decide to continue the study with all the samples.
 
 ## Batch identification
 
@@ -263,27 +263,31 @@ days = scanDate- minscan
 sort(days)
 ```
 
-With those different day groups we can discretize the days numeric variable into desired intervals to finally obtain our surrogate batch indicator variable. In addition, the length of the variable _days_ allows us to define a vector of colors that will be used in the posterior plots.
+We see 7 different batch groups. In order to ease the process of batch identification, we define 4 new groups based on weeks (1: 0, 2, 3 / 2: 7, 10 / 3: 28 / 4: 192). With those different week groups we can discretize the weeks numeric variable into desired intervals to finally obtain our surrogate batch indicator variable. In addition, the length of the variable _weeks_ allows us to define a vector of colors that will be used in the posterior plots.
 
 ```{r}
-batch_days = data.frame(row.names=sort(unique(days)), batch=c(1:length(unique(days))))
-
-ourcolors = rainbow(length(unique(days)))
+# Assign new groups by weeks:
+batch_weeks <- cut(as.numeric(days), c(-1, 6, 20, 50, 200))
+batch_weeks <- as.numeric(batch)
+batch_weeks
 ```
 
-The differential outcome for our dataset is the survival time as the aim of the study is to define a set of genes expressed differentially between resistant cancer patients and non-resistant. To consider it, we extract the variable from the _eset_ and transform it into a character string.
+The differential outcome for our dataset is the recurrence as the aim of the study is to define a set of genes expressed differentially between resistant cancer patients and non-resistant. To consider it, we extract the variable from the _eset_ and transform it into a character string.
 
 ```{r}
-survival_time = eset$characteristics_ch1.7
-survival_time = gsub('.*:', '', survival_time)
-survival_time = as.character(survival_time)
+disease_status = eset$characteristics_ch1.1
+disease_status = gsub('.*: ', '', disease_status)
+disease_status = as.character(disease_status)
+head(disease_status)
 ```
 
 The division of our outcome respect the batch groups can be resumed with the _table_ function:
 
 ```{r}
-table(data.frame(Outcome = survival_time, Batch = days))
+table(data.frame(Outcome = disease_status, Batch = batch_weeks))
 ```
+
+We see the batch variable across samples is clearly not balanced.
 
 ### Hierarchical Clustering
 
@@ -303,18 +307,17 @@ sampleClustering = hclust(d)
 # Function to generate the dendrogram:
 
 sampleDendrogram = as.dendrogram(sampleClustering, hang=0.5)
-batch = days
+batch = batch_weeks
 names(batch) = sampleNames(eset)
-names(survival_time) = sampleNames(eset)
 sampleDendrogram = dendrapply(sampleDendrogram, function(x, batch, labels) {
     ## for every node in the dendrogram if it is a leaf node
     if (is.leaf(x)) {
       print(x)
-        attr(x, "nodePar") = list(lab.col = as.vector(ourcolors[batch_days[as.character(batch[attr(x, "label")]),]]))
+        attr(x, "nodePar") = list(lab.col = as.vector(ourcolors[batch_weeks[as.character(batch_weeks[attr(x, "label")]),]]))
         attr(x, "label") = as.vector(labels[attr(x, "label")])  ## label by survival_time
     }
     x
-}, batch, survival_time)
+}, batch, disease_status)
 
 # And the required command to plot it:
 
