@@ -147,7 +147,6 @@ for (i in 1:nsamples) {
 }
 ```
 
-
 ```{r}
 badSamplesPLMResids = c("38", "27", "8")
 ```
