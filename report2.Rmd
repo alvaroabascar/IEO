@@ -40,9 +40,6 @@ The original data contained 84 samples, of which 4 are controls, 28 correspond t
 
 We need GEOquery to retrieve the assay data and affy to handle data from Affymetrix 3'-biased Arrays.
 ```{r libraries, message=FALSE}
-library(affy)
-library(GEOquery)
-```
 
 This is a simple way to cache the full eset (all the assay data) in a simple object, to avoid
 loading it from the .txt.gz the next time (a costly process).
