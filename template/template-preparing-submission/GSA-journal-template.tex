@@ -48,13 +48,8 @@ Regretfully glioblastomas are notorious for resistance to therapy, which has bee
 
 \subsection*{Tumor Samples and Patient Characteristics}
 
-We analyzed data from 80 frozen glioblastoma samples. The data comprised 70 tumors from initial surgery and 10 samples resected at recurrence. All patients were treated within a phase II or a randomized phase III trial [1,2]
-
-[1] Stupp R, Mason WP, van den Bent MJ, et al: Radiotherapy plus concomitant and adjuvant temozolomide for glioblastoma. N Engl J Med 352:987-996, 2005
-
-[2] Stupp R, Dietrich P, Ostermann Kraljevic S, et al: Promising survival for patients with newly diagnosed glioblastoma multiforme treated with concomitant radiation plus temozolomide followed by adjuvant temozolomide. J Clin Oncol 20:1375-1382, 2002
-
-The study included 21 females and 55 males, with a a median age of 52 (range, 26 to 70 years). 28 received radiotherapy treatment only, and 48 received TMZ/radiotherapy treatment.
+We analyzed data from 80 frozen glioblastoma samples. The data comprised 70 tumors from initial surgery and 10 samples resected at recurrence. All patients were treated within a phase II or a randomized phase III trial\citep{Stupp2002,Stupp2005}
+The study includes 21 females and 55 males, with a a median age of 52 (range, 26 to 70 years). Out of the 76 patients, 28 received radiotherapy treatment only, and 48 received TMZ/radiotherapy treatment.
 
 
 \subsection*{Gene Expression Profiling}
@@ -63,39 +58,13 @@ The microarray data with gene expression profiling was obtained from the Gene Ex
 
 \subsection*{Data Analysis and Statistical Methods}
 
-Analyses were carried out in R, a free software environment available at http://www.r-project.org/. The quality of the microarray data was assessed by a variety of quality checks. Raw chip images were visually inspected to ensure the absence of  artifacts. The intensity distributions of the samples showed a similar exponential distribution, without any artifactual distribution. We used the linear probe level model (PLM) [Bolstad, Brettschneider].
-
-\begin{verbatim}
-Bolstad (2004) (http://bmbolstad.com/Dissertation/Bolstad_2004_Dissertation.pdf)
-Brettschneider etal. (2008) (http://arxiv.org/pdf/0710.0178.pdf)
-\end{verbatim}
-
-We evaluated the quality of the chip pseudoimages, and verified the absence of artifacts in the chip pseudoimages created from the weights and residuals of the sample PLM's. We used Normalized Unscaled Standard Errors (NUSE) [Bolstad2] to evalute the deviation of the chip probsets. Samples with NUSE median value higher than 1.05 were removed.
-
-(see Bolstad et al., 2005 (http://bioinformatics.oxfordjournals.org/content/19/2/185.abstract)
-
-Using the same models, we also evaluated the Relative Log Expression (RLE) values [Bolstad3, Brett.]
-\begin{verbatim}
-(Bolstad ,2004
-(http://bmbolstad.com/Dissertation/Bolstad_2004_Dissertation.pdf); Brettschneider et al., 2008 (http://arxiv.org/pdf/0710.0178.pdf))
-\end{verbatim}
- to determine technical biases on particular chips. No particular deviation of the median or the interquartile range was found on any sample.
-
-The expression intensities for all probe sets from Affymetrix CEL-files were estimated using robust multiarray average  with probe-level quantile normalization followed by median polish summarization [Irizarry et al. (2003) (http://biostatistics.oxfordjournals.org/cgi/content/abstract/4/2/249)] as implemented in the BioConductor software (http://www.bioconductor.org/).
-
-The inspection of MA plots ensured the absence of fluorescent intensity dependent biases. [Boldstad et al. (2003)
-(http://bioinformatics.oxfordjournals.org/content/19/2/185.abstract].
-
-After the quality assurance process, NNN out of the MMM samples were discarded from the analysis.
+Analyses were carried out in R, a free software environment available at http://www.r-project.org/. The quality of the microarray data was assessed by a variety of quality checks. Raw chip images were visually inspected to ensure the absence of  artifacts. The intensity distributions of the samples showed a similar exponential distribution, without any artifactual distribution. We used the linear probe level model (PLM) \citep{Bolstad2004, Brettschneider2007} to verify the absence of artifacts in the chip pseudoimages created from the weights and residuals of the sample PLM's. We used Normalized Unscaled Standard Errors (NUSE) \citep{Bolstad2004} to evalute the deviation of the chip probsets. Samples with NUSE median value higher than 1.05 were removed. Using the same models, we also evaluated the Relative Log Expression (RLE) values \citep{Bolstad2004, Brettschneider2007} to determine technical biases on particular chips. No particular deviation of the median or the interquartile range was found on any sample. The expression intensities for all probe sets from Affymetrix CEL-files were estimated using robust multiarray average  with probe-level quantile normalization followed by median polish summarization \citep{Irizarry2003} as implemented in the BioConductor software (http://www.bioconductor.org/). The inspection of MA plots ensured the absence of fluorescent intensity dependent biases \citep{Bolstad2004}. After the quality assurance process, NNN out of the MMM samples were discarded from the analysis.
 
 Batch effect, blablabla
 
+The Benjamini-Hochberg procedure was applied for multiple testing correction (false-discovery rates) \citep{Benjamini1995}
 
-The Benjamini-Hochberg procedure was applied for multiple testing correction (false-discovery rates) [17]
-
-\begin{verbatim}
-17. Benjamini Y, Hochberg Y: Controlling the false discovery rate: A practical and powerful approach to multiple testing. J R Stat Soc B 57:289-300, 1995
-\end{verbatim}
+blablabla
 
 \section*{Results and Discussion}
 
