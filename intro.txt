@@ -1,7 +1,0 @@
-Glioblastoma multiforme is the most presented and aggressive brain tumor in humans, involving glial cells, with an incidence of 2–3 cases per 100,000 person life-years in Europe and North America ([Fonnet E. Bleeker, _et al_ (2012)](http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3337398/)).
-
-Treatment can involve chemotherapy, radiation and surgery. Median survival with standard-of-care radiation and chemotherapy with the alkylating agent temozolomide is 15 months([Johnson, Derek R. _et al_ (2011)](http://link.springer.com/article/10.1007%2Fs11060-011-0749-4)) while the median survival without treatment is 4 and a half months. Regretfully glioblastomas are notorious for resistance to therapy, which has been attributed to DNA-repair proficiency, a multitude of deregulated molecular pathways, and, more recently, to the particular biologic behavior of tumor stem-like cells. Here, based on the reference work of [Murat, A. _et al_ (2008)](http://www.ncbi.nlm.nih.gov/pubmed/18565887), we aimed to identify the molecular profiles specific for treatment resistance to the current standard of care of concomitant chemoradiotherapy with temozolomide.
-
-To achieve our goal, we take from the reference study a set of gene expression profiles of 80 glioblastomas of patients treated whithin clinical trials of concomitant and adjuvant temozolomide to radiotherapy (n=52) and patients treated with only radioterapy (n=28). In addition, 4 control patients were added to the study.
-
-
