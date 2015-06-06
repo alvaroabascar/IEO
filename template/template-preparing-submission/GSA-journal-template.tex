@@ -46,15 +46,25 @@ Regretfully glioblastomas are notorious for resistance to therapy, which has bee
 
 \section*{Materials and Methods}
 
-Manuscripts submitted to \textit{GENETICS} should contain a clear description of the experimental design in sufficient detail so that the experimental analysis could be repeated by another scientist. If the level of detail necessary to explain the protocol goes beyond two paragraphs, give a short description in the main body of the paper and prepare a detailed description for supporting information.  For example, details would include indicating how many individuals were used, and if applicable how individuals or groups were combined for analysis. If working with mutants indicate how many independent mutants were isolated. If working with populations indicate how samples were collected and whether they were random with respect to the target population.
+\subsection*{Tumor Samples and Patient Characteristics}
 
-\subsection*{Data Access}
+We analyzed data from 80 frozen glioblastoma samples. The data comprised 70 tumors from initial surgery and 10 samples resected at recurrence. All patients were treated within a phase II or a randomized phase III trial\citep{Stupp2002,Stupp2005}
+The study includes 21 females and 55 males, with a a median age of 52 (range, 26 to 70 years). Out of the 76 patients, 28 received radiotherapy treatment only, and 48 received TMZ/radiotherapy treatment.
 
-\textit{GENETICS} is committed to the open access to all primary data (see \href{http://www.genetics.org/content/184/1/1.full}{Genetics, 184: 1}). Please indicate where data can be found (supplemental files, public repository, or published with another paper).
 
-\subsection*{Statistical Analysis} 
+\subsection*{Gene Expression Profiling}
 
-It is important to indicate what statistical analysis has been performed; not just the name of the software and options selected, but the method and model applied. In the case of many genes being examined simultaneously, or many phenotypes, a multiple comparison correction should be used to control the type I error rate, or a rationale for not applying a correction must be provided. The type of correction applied should be clearly stated. It should also be clear whether the p-values reported are raw, or after correction. Corrected p-values are often appropriate, but raw p-values should be available in the supporting materials so that others may perform their own corrections. In large scale data exploration studies (e.g. genome wide expression studies) a clear and complete description of the replication structure must be provided. 
+The microarray data with gene expression profiling was obtained from the Gene Expression Omnibus (GEO) database at http://www.ncbi.nlm.nih.gov/geo/ (accession-number GSE7696). The data was created by the study [XXX] from probes prepared with the Enzo BioArray-High Yield Kit (Enzo Life Sciences, Farmingdale, NY) for double amplification and were hybridized to Affymetrix HG-133Plus2.0 GeneChips (Affymetrix, Santa Clara, CA). The data used had been normalized to the expression of the EIF2C3, DNAJA4, and B2M genes that exhibited little variation in the data set.
+
+\subsection*{Data Analysis and Statistical Methods}
+
+Analyses were carried out in R, a free software environment available at http://www.r-project.org/. The quality of the microarray data was assessed by a variety of quality checks. Raw chip images were visually inspected to ensure the absence of  artifacts. The intensity distributions of the samples showed a similar exponential distribution, without any artifactual distribution. We used the linear probe level model (PLM) \citep{Bolstad2004, Brettschneider2007} to verify the absence of artifacts in the chip pseudoimages created from the weights and residuals of the sample PLM's. We used Normalized Unscaled Standard Errors (NUSE) \citep{Bolstad2004} to evalute the deviation of the chip probsets. Samples with NUSE median value higher than 1.05 were removed. Using the same models, we also evaluated the Relative Log Expression (RLE) values \citep{Bolstad2004, Brettschneider2007} to determine technical biases on particular chips. No particular deviation of the median or the interquartile range was found on any sample. The expression intensities for all probe sets from Affymetrix CEL-files were estimated using robust multiarray average  with probe-level quantile normalization followed by median polish summarization \citep{Irizarry2003} as implemented in the BioConductor software (http://www.bioconductor.org/). The inspection of MA plots ensured the absence of fluorescent intensity dependent biases \citep{Bolstad2004}. After the quality assurance process, NNN out of the MMM samples were discarded from the analysis.
+
+Batch effect, blablabla
+
+The Benjamini-Hochberg procedure was applied for multiple testing correction (false-discovery rates) \citep{Benjamini1995}
+
+blablabla
 
 \section*{Results and Discussion}
 

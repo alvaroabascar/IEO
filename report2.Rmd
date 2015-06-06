@@ -264,7 +264,7 @@ We see 7 different batch groups. In order to ease the process of batch identific
 ```{r}
 # Assign new groups by weeks:
 batch_weeks <- cut(as.numeric(days), c(-1, 6, 20, 50, 200))
-batch_weeks <- as.numeric(batch)
+batch_weeks <- as.numeric(batch_weeks)
 batch_weeks
 ```
 
@@ -274,7 +274,6 @@ The differential outcome for our dataset is the recurrence as the aim of the stu
 disease_status = eset$characteristics_ch1.1
 disease_status = gsub('.*: ', '', disease_status)
 disease_status = as.character(disease_status)
-head(disease_status)
 ```
 
 The division of our outcome respect the batch groups can be resumed with the _table_ function:
@@ -302,26 +301,26 @@ sampleClustering = hclust(d)
 
 # Function to generate the dendrogram:
 
-sampleDendrogram = as.dendrogram(sampleClustering, hang=0.5)
 batch = batch_weeks
-names(batch) = sampleNames(eset)
-sampleDendrogram = dendrapply(sampleDendrogram, function(x, batch, labels) {
+sampleDendrogram <- as.dendrogram(sampleClustering, hang = 0.1)
+names(batch) <- sampleNames(eset)
+names(disease_status) <- sampleNames(eset)
+sampleDendrogram <- dendrapply(sampleDendrogram, function(x, batch, labels) {
     ## for every node in the dendrogram if it is a leaf node
     if (is.leaf(x)) {
-      print(x)
-        attr(x, "nodePar") = list(lab.col = as.vector(ourcolors[batch_weeks[as.character(batch_weeks[attr(x, "label")]),]]))
-        attr(x, "label") = as.vector(labels[attr(x, "label")])  ## label by survival_time
+        attr(x, "nodePar") <- list(lab.col = as.vector(batch[attr(x, "label")]))  ## color by batch
+        attr(x, "label") <- as.vector(labels[attr(x, "label")])  ## label by disease_status
     }
     x
-}, batch, disease_status)
+}, batch, disease_status) 
 
 # And the required command to plot it:
 
 plot(sampleDendrogram, main = "Hierarchical clustering of samples")
-legend("topright", paste("Batch", sort(unique(batch))), fill = ourcolors)
+legend("topright", paste("Batch", sort(unique(batch))), fill = sort(unique(batch)))
 ```
 
-In this dendrogram we can see that our samples do not cluster by batch, indicating that apparently in this case we don't have batch effect. We would like to identify a separation by survival time, but it is clear that the different survivals are mixed. We don't see, so far, a relationship among different survival times and expression.
+In this dendrogram we can see that our samples do not cluster by batch, indicating that apparently in this case we don't have batch effect. We would like to identify a separation by recurrence, but it is clear that the different recurrences are mixed. We don't see, so far, a relationship among different recurrence and expression.
 
 ### Multidimensional Scaling
 
@@ -335,12 +334,11 @@ head(cmd)
 
 # Ploting the result
 plot(cmd, type = "n")
-text(cmd, survival_time, col = ourcolors[batch_days[as.character(batch),]], cex = 0.9)
-legend("topleft", paste("Batch", unique(batch)), fill = ourcolors[batch_days[as.character(unique(batch)),]], inset = 0.01)
+text(cmd, disease_status, col = batch, cex = 0.9)
+legend("topleft", paste("Batch", unique(batch)), fill = unique(batch), inset = 0.01)
 ```
 
-All the survival times are mixed well and we cannot detect any color group in the distribution meaning that there is no bacth effect that could confound a possible differential classification of the outcome. 
-
+All the recurrence status are mixed well and we cannot detect any color group in the distribution meaning that there is no bacth effect that could confound a possible differential classification of the outcome. 
 
 ### Quantifying Confounding
 
@@ -361,21 +359,21 @@ plot(s$d^2/sum(s$d^2), type="b", lwd=2, las=1, xlab="Principal Component", ylab=
 Using the function _cumsum_ we can evaluate the amount variance accumulated with each principal component:
 
 ```{r}
-head(cumsum(s$d^2/sum(s$d^2)))
+head(cumsum(s$d^2/sum(s$d^2)), 12)
 ```
 
-In this case we explain more than 50% of variance considering 6 principal components. 
+In this case we explain more than 50% of variance considering 11 principal components. 
 
 Finally, in order to get an estimate the amount of variability driven by batch, we should inspect the correlations between our batch indicator variable and the right-singular vectors in the component _v_ of _s_:
 
 ```{r}
-par(mfrow=c(2, 3))
-for (i in 1:6) {
+par(mfrow=c(3, 4))
+for (i in 1:12) {
   boxplot(split(s$v[, i], batch), main=sprintf("PC%d %.0f%%", i, 100 * s$d[i]^2/sum(s$d^2)))
 }
 ```
 
-We can see the distribution, for each of the batch subgroups, of each of the six principal components. We can appreciate that the batch number 10 has a wider distribution across components 1, 2 and 3, while batch number 2 exhibits more variance in components 4 and 5. The results are, however, hard to interpret due to the low (and different) number of samples in each of the subgroups (eg. in the subgroup corresponding to day 192, we only have one sample), and we should not infer a batch effect from this analysis.
+We can see the distribution, for each of the batch subgroups, of each of the twelve principal components. We can appreciate that the batch number 2 has a wider distribution across components 1 and 2, while batch number 4 exhibits more variance in components 4 and 5. The results are, however, hard to interpret due to the low (and different) number of samples in each of the subgroups and we should not infer a batch effect from this analysis.
 
 ### Surrogate Variable Analysis
 
@@ -384,7 +382,7 @@ With the SVA we try to identify sources of heterogeneity (eg. non-biological var
 ```{r}
 library(sva)
 # We need the outcome variable in binary format, with a threshold of 20 months of survival
-st_bin <- ifelse(survival_time >= 20, 1, 0)
+st_bin <- ifelse(disease_status != "GBM", 1, 0)
 
 # Define the full and null models
 mod = model.matrix(~st_bin, data=pData(eset))
@@ -396,7 +394,7 @@ mod0 <- model.matrix(~1, data = pData(eset))
 sv <- sva(exprs(eset), mod, mod0)
 
 # Plot the correlations
-par(mfrow = c(2, 3))
+par(mfrow = c(3, 3))
 for (i in 1:sv$n.sv) boxplot(sv$sv[, i] ~ batch, main = sprintf("SV %d", i), xlab = "Batch")
 ```
 
@@ -418,14 +416,13 @@ pValuesSv <- f.pvalue(exprs(eset), modSv, mod0Sv)
 sum(p.adjust(pValuesSv, method = "BH") < 0.05)
 ```
 
-We do not see any gene with a significant change between the full and null model. 
+We see more than 4000 genes with a significant change between the full and null model. 
 
-After the analysis conducted so far, we can assert that there is no batch effect in our samples. However, we have also seen that the samples corresponding to different survival times have clustered in a rather heterogeneous way, which might indicate a lack of relationship among gene expression and survival when we take into account all the groups at the same time.
+After the analysis conducted so far, we can assert that there is no batch effect in our samples. However, we have also seen that the samples corresponding to different recurrence have clustered in a rather heterogeneous way, which might indicate a lack of relationship among gene expression and survival when we take into account all the groups at the same time.
 
 ## Differential expression
 
-With the aim to identify changes in gene expression associated to a specific condition, we perform a gene differential expression analysis. The condition in this analysis is the survivavility of the tumoral condition in patients treated with concomitant chemoradiotherapy(TMZ/RT->TMZ).
-
+With the aim to identify changes in gene expression associated to a specific condition, we perform a gene differential expression analysis. The condition in this analysis is the recurrence status in patients.
 
 ```{r "DE", message=FALSE}
 library(Biobase)
@@ -434,13 +431,11 @@ library(limma)
 library(sva)
 library('hgu133plus2.db')
 annotation(eset)<-'hgu133plus2.db'
-
 ```
 
 First we setup the input data in a format suitable for the analysis.
 
 ```{r}
-eset = eset[, eset$characteristics_ch1.6 != "survival status: NA"] # Remove control patients
 eset$characteristics_ch1.1 = factor(eset$characteristics_ch1.1) # disease status: re-recurrent GBM
 eset$characteristics_ch1.2 = factor(eset$characteristics_ch1.2) # patient id
 eset$characteristics_ch1.3 = factor(eset$characteristics_ch1.3) # age: dd.d
@@ -452,8 +447,8 @@ eset$characteristics_ch1.8 = factor(eset$characteristics_ch1.8) # mgmt status: M
 eset$mgmt = eset$characteristics_ch1.8
 eset$treatment = eset$characteristics_ch1.5
 
-eset$survival_status = as.double(gsub('.*: ', '', eset$characteristics_ch1.6)) == 1
-eset$survival_status = factor(eset$survival_status)
+#eset$disease_status = ifelse(eset$characteristics_ch1.1 == "recurrent GBM", 1, 0)
+eset$disease_status = grepl("recurrent",eset$characteristics_ch1.1)
 
 # Transforming some variables to dichotomic
 survival_threshold = 20
@@ -463,7 +458,6 @@ eset$survival_time_dichotomic = factor(eset$survival_time_dichotomic)
 age_threshold = 50
 eset$aged = as.double(gsub('.*: ', '', eset$characteristics_ch1.3)) > age_threshold
 eset$aged = factor(eset$aged)
-
 ```
 
 ### Fold-change
@@ -471,8 +465,8 @@ eset$aged = factor(eset$aged)
 To evaluate the expression levels we calculate the fold-change expression for each gene, comparing the expression levels between the surviving and non-surviving groups.
  
 ```{r}
-zeroExp <- rowMeans(exprs(eset[, eset$survival_time_dichotomic]))
-oneExp <- rowMeans(exprs(eset[, eset$survival_time_dichotomic != TRUE]))
+zeroExp <- rowMeans(exprs(eset[, eset$disease_status]))
+oneExp <- rowMeans(exprs(eset[, eset$disease_status != TRUE]))
 par(mfrow = c(1, 2))
 plot(zeroExp, oneExp, xlab = "Zero", ylab = "One", pch = ".", cex = 4, las = 1)
 plot((oneExp + zeroExp)/2, oneExp - zeroExp, pch = ".", cex = 4, las = 1)
@@ -480,59 +474,40 @@ plot((oneExp + zeroExp)/2, oneExp - zeroExp, pch = ".", cex = 4, las = 1)
 
 We can see that, in general, all the genes cluster together. We have certain points that deviate from the bulk, but not enough to imply an obvious differential expression. However, we can proceed with further analysis to verify this.
 
-### Significance
+### Removing less variable genes
 
-We need to assess the significance of the differentially expressed genes, applying a Benjamini-Hochberg multiple test correction.
+A first solution to avoid multiple testing problems consists in removing genes that are uninteresting biologically-wise. 
+
+We could remove genes that show little variation following the  process that eliminates the 30% of genes with less variability in the following way:
 
 ```{r}
-allTests <- rowttests(eset, eset$survival_time_dichotomic)
-min(allTests$p.value)
+# IQRs <- esApply(eset, 1, IQR)
+# plot.ecdf(IQRs, xlab = "IQR", main = "Empirical CDF of IQR values")
+# abline(v = quantile(IQRs, prob = 0.3), col = "red", lwd = 2)
+# 
+# maskHighVariability <- IQRs > quantile(IQRs, prob = 0.3)
+# length(maskHighVariability)
+# 
+# sum(maskHighVariability)
+# 
+# eset_filtered <- eset[maskHighVariability, ]
+# 
+# dim(eset_filtered)
 ```
 
-We need to adjust for multiple testing.
+The best way to reduce the number of analysed probe sets is by _nsFilter_. This utility function filters out features exhibiting little variation, or a consistently low signal, across samples, as well as features with insufficient annotation.
 
 ```{r}
-# FDR adjustment
-padjFDR <- p.adjust(allTests$p.value, method = "BH")
-sum(padjFDR < 0.05)
-min(padjFDR)
-```
-
-From this test it is clear that there are too many genes, and the multiple test correction renders all the tests insignificant due to the large number of tests. A possible solution to this problem consists in removing genes that are uninteresting biologically-wise.
-
-First, we remove genes that show little variation. Following the procedure of the paper, we remove the genes that have a standard deviation below 0.75.
-
-```{r}
-maskHighVariability <- apply(exprs(eset), 1, sd)>0.75
-eset_filtered <- eset[maskHighVariability, ]
-```
-
-This reduces the dataset from `r nrow(eset)` genes down to `r nrow(eset_filtered)`. Although there is an increase in significance with the lower amount of tested genes, it is still not enough, as seen on the minimal corrected p-value obtained.
-
-```{r}
-fewerTests <- rowttests(eset_filtered, eset_filtered$survival_time_dichotomic)
-padjFDR <- p.adjust(fewerTests$p.value, method = "BH")
-sum(padjFDR < 0.05)
-min(padjFDR)
-```
-
-We have seen how removing the genes with lower standard deviation have helped to obtain lower p-values by means of reducing the number of tests, but these are still far from the 0.05. To reduce even more the number of analysed probe sets we use the _nsFilter_ function. This utility function filters out  features exhibiting little variation, or a consistently low signal, across samples, as well as features with insufficient annotation.
-
-```{r}
-filtered <- nsFilter(eset_filtered, require.entrez=TRUE,
+filtered <- nsFilter(eset, require.entrez=TRUE,
          require.GOBP=FALSE, require.GOCC=FALSE,
          require.GOMF=FALSE, require.CytoBand=FALSE,
          remove.dupEntrez=TRUE, var.func=IQR,
          var.cutoff=0.5, var.filter=TRUE,
          filterByQuantile=TRUE, feature.exclude="^AFFX")
 eset_filtered <- filtered$eset
-fewerTests <- rowttests(eset_filtered, eset_filtered$survival_time_dichotomic)
-padjFDR <- p.adjust(fewerTests$p.value, method = "BH")
-sum(padjFDR < 0.05)
-min(padjFDR)
 ```
 
-The dataset is reduced to `r nrow(eset_filtered)` genes. As seen in the result, now the lowest p-value is higher than in the previous case. It is obvious that the corresponding gene was removed by the function nsFilter, maybe due to a low signal or a deficient annotation.
+With this, we have generated a new _eset_ dataset containing less probe sets: `r length(featureNames(eset_filtered))`, compared with the initial set of `r length(featureNames(eset))`.
 
 ### Moderated t-test using limma
 
@@ -541,7 +516,7 @@ To prevent problems associated to limited replication, we use the empirical Baye
 We project our data to a linear model and calculate the moderated t-statistics.
 
 ```{r}
-design <- model.matrix(~survival_time_dichotomic, data = eset_filtered)
+design <- model.matrix(~disease_status, data = eset_filtered)
 fit <- lmFit(eset_filtered, design)
 fit <- eBayes(fit)
 res <- decideTests(fit, p.value = 0.1)
@@ -567,7 +542,7 @@ if (sum(tt$adj.P.Val < 0.1) > 0) {
 points(tt[tt$adj.P.Val < 0.1, "logFC"], -log10(tt[tt$adj.P.Val < 0.1, "P.Value"]), pch=".", cex=4, col="red")
 ```
 
-If we had p-values lower than 0.1, we would be able to see a line separating the differentially (above the line) and non-differentially (below the line) expressed genes. However, in this case our minimum p-value is higher than this threshold of 0.1.
+We see in red in the volcano plot those genes apparently differentially expressed. 
 
 ### Adjusting for covariates
 
@@ -578,7 +553,7 @@ eset_filtered$mgmtM = eset_filtered$mgmt == "mgmt status: M"
 
 # Surrogate Variables
 # adjusted for age (> 50 years) and MGMT methylation status
-mod <- model.matrix(~survival_time_dichotomic + mgmtM + aged, data = eset_filtered)
+mod <- model.matrix(~disease_status + mgmtM + aged, data = eset_filtered)
 mod0 <- model.matrix(~ mgmtM + aged, data = eset_filtered)
 
 svaobj <- sva(exprs(eset_filtered), mod, mod0)
@@ -604,27 +579,119 @@ if (sum(ttadj$adj.P.Val < 0.1) > 0) {
 points(ttadj[ttadj$adj.P.Val < 0.1, "logFC"], -log10(ttadj[ttadj$adj.P.Val < 0.1, "P.Value"]), pch=".", cex=4, col="red")
 ```
 
-Still, we have no significant genes.
+We see that the number of genes differentially expressed have been increased after the correction. 
 
-## Conclusion
+## First Conclusions
 
-During this analysis we have explored the data provided by Murat, A. et al. (2008). We have performed a quality assessment, ensuring that the samples have enough quality to proceed with the analysis. In addition, we have tried to identify sources of batch effect, concluding that these samples are not affected by this type of technical bias. Finally, we have made a first attempt to detect differentially expressed genes on two groups of samples: those corresponding to patients with a survival above and below 20 months.
+During this analysis we have explored the data provided by Murat, A. et al. (2008). We have performed a quality assessment, ensuring that the samples have enough quality to proceed with the analysis. In addition, we have tried to identify sources of batch effect, concluding that these samples are not affected by this type of technical bias. Finally, we have made a first attempt to detect differentially expressed genes on two groups of samples: those corresponding to patients with a recurrent glioblastoma. 
 
-The analysis of differential expression has revealed no significant genes. However, we have made the analysis jointly for both TMZ/radiotherapy and radiotherapy sample groups. One possible explanation for the lack of significant results is that the genes affecting survival time are different in each kind of treatment. This suggest that the next step is to analyze separately both sample groups.
+The analysis of differential expression has revealed some genes differentially expressed that we will study in detail in further steps. 
 
-Finally, the analysis driven by Murat, A. et al. includes a process of gene clustering using CTWC ([see their gene clusters here](http://bcf.isb-sib.ch/projects/cancer/glio/Results-56231395/index.html)), leading to a reduced set that is key to obtain statistically significant results. In our case we have tested each gene separately, an approach with a much lower statistical power.
+## Functional Annotation
 
-## Future steps
+Functional annotations are descriptions of biological activity assigned to structural elements of the genome (e.g., DNA sites, genes, etc.) and to features from high-throughput assay platforms (e.g., microarrays). Functional annotations range from molecular mechanisms (e.g., DNA binding) to high-level phenotypes (e.g., Mendelian genetic disorders).
 
-A similar analysis could be performed analyzing the differential expression separately for TMZ/radiotherapy and radiotherapy samples. Moreover, we could do the analysis including all of the 81 samples, instead of using a reduced set of just 21 samples, which might reveal more significant genes. 
+Usually, functional annotations are partial, noisy, dynamic and their coverage varies drastically among organisms. However, they are essential to any downstream bioinformatic analysis of high-throughput assay data.
 
-In addition, as each samples has several phenotipical characteristics, it might be interesting to perform the previous analysis focusing on a variable different from the survival time.
+## Funtional Enrichment Analysis
 
-More importantly, we could study the possibility to use a clustering technique to group related genes in order to improve the statistical significance, as we will be considering biological and functional aspects.
+Given a list of differentially expressed (DE) genes, we may know the function and role of some of those genes within the molecular process under study. This may already shed light on what is being investigated. However, even if we knew what every DE gene is doing, we would need to frame their activity within the pathways in which they are participating to make a hypothesis about why are they changing.
+
+A closer model to the underlying biology is the one in which pathways, or gene sets, are DE. We may want then to do either the DE analysis directly at pathway level, or indirectly by assessing over-representation (enrichment) of our DE genes in every pathway of interest.
+
+Therefore, our goal is to generate _gene sets_ following the steps:
+1) Search for DE genes.
+2) For every gene set, verify whether these DE genes belong to the gene set in a proportion that exceeds any expectation of finding that number of genes in that gene set by chance alone.
+
+### Gene Ontology analysis
+
+In order to do this we performa a _Gene Ontology Analysis_. We start searching for DE genes at 10% FDR between recurrent and non-recurrent samples from the results obtained using Limma in the previous step:
+
+```{r}
+library(hgu133a.db)
+
+DEgenes <- rownames(ttadj[ttadj$adj.P.Val < 0.1, , drop = FALSE])
+length(DEgenes)
+
+# Select gene ID in database
+DEgenes_indb <- select(hgu133plus2.db, DEgenes, "ENTREZID", "PROBEID")
+
+universeIDs <- select(hgu133plus2.db, featureNames(eset_filtered), "ENTREZID", "PROBEID")
+```
+
+We see we have `r length(DEgenes)` differentially expressed. In order to define the gene ontology terms we use the _GOStats_ package. 
+
+But we have to take into account one thing, a problem in a GO analysis is the hierarchy of GO terms and their overlap render highly dependent tests. If parent and a child GO term contain the same genes and both are significant, the child node is more relevant because is more specific. Compute the significance of a GO term conditional on the significance of its children. Proceed bottom-up removing all genes in a significant GO term from its parents. This is regarded as a conditional test that we have to apply using:
+
+```{r}
+library(GOstats)
+
+# Begin building a parameter object as follows
+params <- new("GOHyperGParams", geneIds = DEgenes_indb$ENTREZID, universeGeneIds = universeIDs$ENTREZID, annotation = "hgu133plus2.db", ontology = "BP", pvalueCutoff = 0.05, testDirection = "over")
+
+conditional(params) <- TRUE  #To consider the conditional test
+
+# Run the functional enrichment analysis.
+hgOverCond <- hyperGTest(params)
+hgOverCond
+
+# And store and visualize the results.
+htmlReport(hgOverCond, file = "gocondtests.html")
+# browseURL("gocondtests.html")
+```
+
+# TODO : Alguna forma de añadir ese html como links y explicar mas o menos que se ve!
+
+The resulting object from a call to hyperGTest() belongs to the class of objects GOHyperGResult. We can find out what methods are available to explore the results in detail. A few of the more useful ones are:
+
+```{r}
+head(summary(hgOverCond), n = 3)
+head(geneCounts(hgOverCond)) 
+head(universeCounts(hgOverCond))
+head(pvalues(hgOverCond))
+```
+
+We inspect our results:
+
+```{r}
+goresults <- summary(hgOverCond)
+head(goresults)
+```
+
+### Filter of GO terms
+GO terms involving a few genes (e.g., < 5) in their size (m) and in their enrichment by DE genes are likely to be less reliable than those that involve many genes.
+
+In order to try to spot the more reliable GO terms we can filter the previous results by a minimum value on the Count and Size columns and order them by the OddsRatio column:
+
+```{r}
+goresults <- goresults[goresults$Size >= 5 & goresults$Count >= 5, ]
+goresults <- goresults[order(goresults$OddsRatio, decreasing = TRUE), ]
+goresults
+```
+
+We can extract the genes that enrich each GO term and paste it to the result as follows:
+
+```{r}
+geneIDs <- geneIdsByCategory(hgOverCond)[goresults$GOBPID]
+geneSYMs <- sapply(geneIDs, function(id) select(org.Hs.eg.db, columns = "SYMBOL", key = id, keytype = "ENTREZID")$SYMBOL)
+geneSYMs <- sapply(geneSYMs, paste, collapse = ", ")
+goresults <- cbind(goresults, Genes = geneSYMs)
+rownames(goresults) <- 1:nrow(goresults)
+```
+
+We can generate an HTML page from a data.frame object using the xtable package:
+
+```{r}
+library(xtable)
+xtab <- xtable(goresults, align = "l|c|r|r|r|r|r|p{3cm}|p{3cm}|")
+print(xtab, file = "goresults.html", type = "html")
+```
+
+#TODO : de nuevo, tratar de linkear este html y poner un poc que tienen los genes que aparecen
 
 
 
-## Session information
+##Session information
 
 ```{r}
 sessionInfo()
