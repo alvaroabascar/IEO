@@ -693,6 +693,17 @@ print(xtab, file = "goresults.html", type = "html")
 
 #TODO : de nuevo, tratar de linkear este html y poner un poc que tienen los genes que aparecen
 
+plotGS <- function(eset, gs, pheno, ...) {
+    l <- levels(pData(eset)[, pheno])
+    idxSamples1 <- pData(eset)[, pheno] == l[1]
+    idxSamples2 <- pData(eset)[, pheno] == l[2]
+    exps1 <- rowMeans(exprs(eset[gs, idxSamples1]))
+    exps2 <- rowMeans(exprs(eset[gs, idxSamples2]))
+    rng <- range(c(exps1, exps2))
+    plot(exps1, exps2, pch = 21, col = "black", bg = "black", xlim = rng, ylim = rng, 
+        xlab = l[1], ylab = l[2], ...)
+    abline(a = 0, b = 1, lwd = 2, col = "red")
+}
 
 
 ##Session information
