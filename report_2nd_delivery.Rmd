@@ -591,12 +591,6 @@ During this analysis we have explored the data provided by Murat, A. et al. (200
 
 The analysis of differential expression has revealed some genes differentially expressed that we will study in detail in further steps. 
 
-## Functional Annotation
-
-Functional annotations are descriptions of biological activity assigned to structural elements of the genome (e.g., DNA sites, genes, etc.) and to features from high-throughput assay platforms (e.g., microarrays). Functional annotations range from molecular mechanisms (e.g., DNA binding) to high-level phenotypes (e.g., Mendelian genetic disorders).
-
-Usually, functional annotations are partial, noisy, dynamic and their coverage varies drastically among organisms. However, they are essential to any downstream bioinformatic analysis of high-throughput assay data.
-
 ## Funtional Enrichment Analysis
 
 Given a list of differentially expressed (DE) genes, we may know the function and role of some of those genes within the molecular process under study. This may already shed light on what is being investigated. However, even if we knew what every DE gene is doing, we would need to frame their activity within the pathways in which they are participating to make a hypothesis about why are they changing.
@@ -677,7 +671,7 @@ We can extract the genes that enrich each GO term and paste it to the result as 
 
 ```{r}
 geneIDs <- geneIdsByCategory(hgOverCond)[goresults$GOBPID]
-geneSYMs <- sapply(geneIDs, function(id) select(org.Hs.eg.db, columns = "SYMBOL", key = id, keytype = "ENTREZID")$SYMBOL)
+geneSYMs <- sapply(geneIDs, function(id) select(hgu133plus2.db, columns = "SYMBOL", key = id, keytype = "ENTREZID")$SYMBOL)
 geneSYMs <- sapply(geneSYMs, paste, collapse = ", ")
 goresults <- cbind(goresults, Genes = geneSYMs)
 rownames(goresults) <- 1:nrow(goresults)
@@ -693,11 +687,149 @@ print(xtab, file = "goresults.html", type = "html")
 
 #TODO : de nuevo, tratar de linkear este html y poner un poc que tienen los genes que aparecen
 
+## Using GO enrichment in the study of Over/Under-expressed genes
 
+Once we have defined the gene ontology terms related to the differentially expressed genes we may be interested in knowing over and underexpressed genes in the two conditions (recurrent and non-recurrent).
+
+To do this, we separate the initial eset_filtered in two subsets, one for recurrent patients and non-recurrent:
+
+```{r}
+eset_recurrent = eset_filtered[, eset_filtered$disease_status]
+eset_norecurrent = eset_filtered[, !eset_filtered$disease_status]
+```
+
+From this two expression sets we need to extract the mean expression values for all the samples for each gene differentially expressed. We achieve this iterating over the two groups of expressions and generating two vectors of genes:
+
+```{r}
+# Initial list of DE genes and vector definition
+DEgenes <- rownames(ttadj[ttadj$adj.P.Val < 0.1, , drop = FALSE])
+recurrent_overexpressed = c()
+recurrent_underexpressed = c()
+
+# Loop to compare mean expressions for those DE genes.
+for (gene in DEgenes) {
+  diff = mean(exprs(eset_recurrent)[gene,]) - mean(exprs(eset_norecurrent)[gene,])
+  if (diff >= 0) {
+    recurrent_overexpressed = c(recurrent_overexpressed, gene)
+  } else {
+    recurrent_underexpressed = c(recurrent_underexpressed, gene)
+  }
+}
+```
+
+### Overexpressed genes in recurrent state:
+
+The next step consists on repeating the previous process of GO enrichment but this  time using only the subsets of DE genes with more expression in recurrent status.
+
+```{r}
+# Select gene ID in database
+DEgenes_indb <- select(hgu133plus2.db, recurrent_overexpressed, "ENTREZID", "PROBEID")
+universeIDs <- select(hgu133plus2.db, featureNames(eset_filtered), "ENTREZID", "PROBEID")
+
+# Build a parameter object
+params <- new("GOHyperGParams", geneIds = DEgenes_indb$ENTREZID, universeGeneIds = universeIDs$ENTREZID, annotation = "hgu133plus2.db", ontology = "BP", pvalueCutoff = 0.05, testDirection = "over")
+
+conditional(params) <- TRUE  #To consider the conditional test
+
+# Run the functional enrichment analysis.
+hgOverCond <- hyperGTest(params)
+hgOverCond
+
+# And store the results.
+htmlReport(hgOverCond, file = "go_overexpr_condtests.html")
+# browseURL("gocondtests.html")
+```
+
+# TODO : Alguna forma de añadir ese html como links y explicar mas o menos que se
+
+```{r}
+goresults <- summary(hgOverCond)
+
+# Filtering results with less than 5 of size:
+goresults <- goresults[goresults$Size >= 5 & goresults$Count >= 5, ]
+goresults <- goresults[order(goresults$OddsRatio, decreasing = TRUE), ]
+goresults
+```
+
+We can extract the genes that enrich each GO term and are overexpressed in recurrent patients and paste it to the result as follows:
+
+```{r}
+geneIDs <- geneIdsByCategory(hgOverCond)[goresults$GOBPID]
+geneSYMs <- sapply(geneIDs, function(id) select(hgu133plus2.db, columns = "SYMBOL", key = id, keytype = "ENTREZID")$SYMBOL)
+geneSYMs <- sapply(geneSYMs, paste, collapse = ", ")
+goresults <- cbind(goresults, Genes = geneSYMs)
+rownames(goresults) <- 1:nrow(goresults)
+
+# We can generate an HTML page from a data.frame object using the xtable package:
+
+xtab <- xtable(goresults, align = "l|c|r|r|r|r|r|p{3cm}|p{3cm}|")
+print(xtab, file = "go_overexpr_results.html", type = "html")
+```
+
+###Underexpressed genes in recurrent state:
+
+Finally, we do the same but using the underexpressed gene set:
+
+```{r}
+# Select gene ID in database
+DEgenes_indb <- select(hgu133plus2.db, recurrent_underexpressed, "ENTREZID", "PROBEID")
+
+universeIDs <- select(hgu133plus2.db, featureNames(eset_filtered), "ENTREZID", "PROBEID")
+
+# Build a parameter object as follows
+params <- new("GOHyperGParams", geneIds = DEgenes_indb$ENTREZID, universeGeneIds = universeIDs$ENTREZID, annotation = "hgu133plus2.db", ontology = "BP", pvalueCutoff = 0.05, testDirection = "over")
+
+conditional(params) <- TRUE  #To consider the conditional test
+
+# Run the functional enrichment analysis.
+hgOverCond <- hyperGTest(params)
+hgOverCond
+
+# And store and visualize the results.
+htmlReport(hgOverCond, file = "go_underexpr_condtests.html")
+# browseURL("gocondtests.html")
+```
+
+# TODO : Alguna forma de añadir ese html como links y explicar mas o menos que se ve!
+
+```{r}
+goresults <- summary(hgOverCond)
+
+# Filter results:
+goresults <- goresults[goresults$Size >= 5 & goresults$Count >= 5, ]
+goresults <- goresults[order(goresults$OddsRatio, decreasing = TRUE), ]
+goresults
+```
+
+We can extract the genes that enrich each GO term underexpressed in recurrent patients and paste it to the result as follows:
+
+```{r}
+geneIDs <- geneIdsByCategory(hgOverCond)[goresults$GOBPID]
+geneSYMs <- sapply(geneIDs, function(id) select(hgu133plus2.db, columns = "SYMBOL", key = id, keytype = "ENTREZID")$SYMBOL)
+geneSYMs <- sapply(geneSYMs, paste, collapse = ", ")
+goresults <- cbind(goresults, Genes = geneSYMs)
+rownames(goresults) <- 1:nrow(goresults)
+
+# Generate the html file:
+xtab <- xtable(goresults, align = "l|c|r|r|r|r|r|p{3cm}|p{3cm}|")
+print(xtab, file = "go_underexpr_results.html", type = "html")
+```
+
+## Gene Set Enrichment Analysis
+
+The main idea of this part is to calculate for each gene set an enrichment score (ES) as function of the changes in gene expression by the genes forming the gene set.
+
+Firstly, we generate the vector of genes based on the results of Gene Ontology:
+
+```{r}
+allHumanGO <- select(hgu133plus2.db, columns = "PROBEID", key ="GO:1902106", keytype = "GO")
+
+```
 
 ##Session information
 
 ```{r}
 sessionInfo()
 ```
+
 
