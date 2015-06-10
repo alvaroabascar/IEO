@@ -1,0 +1,53 @@
+This is BibTeX, Version 0.99d (TeX Live 2013/Debian)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: GSA-journal-template.aux
+The style file: genetics.bst
+Database file #1: example-bibliography.bib
+Repeated entry---line 198 of file example-bibliography.bib
+ : @article{Murat2008
+ :                   ,
+I'm skipping whatever remains of this entry
+Warning--empty journal in Bleeker2012
+Warning--empty school in Bolstad2004
+You've used 14 entries,
+            2739 wiz_defined-function locations,
+            715 strings with 8688 characters,
+and the built_in function-call counts, 9530 in all, are:
+= -- 767
+> -- 824
+< -- 6
++ -- 272
+- -- 258
+* -- 1093
+:= -- 1681
+add.period$ -- 27
+call.type$ -- 14
+change.case$ -- 155
+chr.to.int$ -- 14
+cite$ -- 16
+duplicate$ -- 330
+empty$ -- 504
+format.name$ -- 276
+if$ -- 1799
+int.to.chr$ -- 1
+int.to.str$ -- 1
+missing$ -- 13
+newline$ -- 45
+num.names$ -- 56
+pop$ -- 121
+preamble$ -- 1
+purify$ -- 142
+quote$ -- 0
+skip$ -- 167
+stack$ -- 0
+substring$ -- 481
+swap$ -- 117
+text.length$ -- 1
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 126
+warning$ -- 2
+while$ -- 66
+width$ -- 0
+write$ -- 154
+(There was 1 error message)
