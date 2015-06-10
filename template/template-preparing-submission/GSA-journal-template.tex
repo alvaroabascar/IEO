@@ -67,12 +67,14 @@ the quality of the microarray data was assessed by a variety of quality checks. 
 \subsubsection*{Analysis of batch effect and confounding variables:}
 the samples were checked for batch effect, first using hierarchical clustering after measuring the Spearman correlation among samples, and then verifying the absence of batch effects by multidimensional scaling. The presence of confounding variables was assessed by means of principal component analysis, and different sources of heterogeneity were analyzed by surrogate variable analysis \citep{Leek2007}.
 
-\subsubsection*{Differential Expression}: the list of analyzed probes was reduced using a non-specific filtering \citep{Bourgon2010}, eliminating features with little variation (IQR cutoff = 0.5), consistently low signal across samples, or insufficient annotation. The differential expression analysis of microarray data was done with an empirical Bayes method \citep{Smyth2004} implemented in the Bioconductor package limma. The Benjamini-Hochberg procedure was applied for multiple testing correction (false-discovery rates) \citep{Benjamini1995}. We called DE genes at 10\% FDR.
+\subsubsection*{Differential Expression}: the list of analyzed probes was reduced using a non-specific filtering \citep{Bourgon2010}, eliminating features with little variation (IQR cutoff = 0.5), consistently low signal across samples, or insufficient annotation. The differential expression analysis of microarray data was done with an empirical Bayes method \citep{Smyth2004} implemented in the Bioconductor package limma. The Benjamini-Hochberg procedure was applied for multiple testing correction (false-discovery rates) \citep{Benjamini1995}. We called DE genes at 5\% FDR.
 
 \subsubsection*{Functional Enrichment}: we analysed the enrichment of gene ontology terms (\url{http://www.geneontology.org}) for biological processes (GO BP) using a one-tailed Fisher's exact test \citep{Fisher1922}. The significance of the GO terms is computed conditionally to the significance of its child terms \citep{Alexa2006}. GO terms formed by less than five genes or with less than five DE genes were removed to improve the reliability of the results.
 
 \section*{Results and Discussion}
+The analysis of diferential expression resulted in 101 genes differentially expressed (corrected p-value < 0.05) across the two conditions (recurrent and non-recurrent GBM). The GO enrichment analysis revealed 14 GO terms
 
+\section*{Conclusion}
 
 \section*{Additional guidelines}
 
