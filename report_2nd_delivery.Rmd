@@ -523,7 +523,7 @@ We project our data to a linear model and calculate the moderated t-statistics.
 design <- model.matrix(~disease_status, data = eset_filtered)
 fit <- lmFit(eset_filtered, design)
 fit <- eBayes(fit)
-res <- decideTests(fit, p.value = 0.05)
+res <- decideTests(fit, p.value = 0.1)
 summary(res)
 ```
 
@@ -539,11 +539,12 @@ hist(tt$P.Value, xlab = "Raw P-values", breaks = 1000, main = "")
 This distribution appears to be slightly negatively skewed (more density of p-values near 1). Adjusting for covariates we will be able to reduce this effect and obtain a more uniform distribution.
 
 ```{r out.width="600px"}
+par(mfrow=c(1,1))
 plot(tt$logFC, -log10(tt$P.Value), pch=".", cex=4, col=grey(0.75), cex.axis=1.2, las=1, cex.lab=1.5, xlab=expression(paste(log[2], " Fold change")), ylab=expression(paste(-log[10], " P-value")))
-if (sum(tt$adj.P.Val < 0.05) > 0) {
-  abline(h=-log10(max(tt[tt$adj.P.Val < 0.05, "P.Value"])), col=grey(0.5), lty=2)
+if (sum(tt$adj.P.Val < 0.1) > 0) {
+  abline(h=-log10(max(tt[tt$adj.P.Val < 0.1, "P.Value"])), col=grey(0.5), lty=2)
 }
-points(tt[tt$adj.P.Val < 0.05, "logFC"], -log10(tt[tt$adj.P.Val < 0.05, "P.Value"]), pch=".", cex=4, col="red")
+points(tt[tt$adj.P.Val < 0.1, "logFC"], -log10(tt[tt$adj.P.Val < 0.1, "P.Value"]), pch=".", cex=4, col="red")
 ```
 
 We see in red in the volcano plot those genes apparently differentially expressed. 
@@ -577,10 +578,10 @@ Now we can see that the distribution is much closer to uniform. We can do again 
 
 ```{r out.width="600px"}
 plot(ttadj$logFC, -log10(ttadj$P.Value), pch=".", cex=4, col=grey(0.75), cex.axis=1.2, las=1, cex.lab=1.5, xlab=expression(paste(log[2], " Fold change")), ylab=expression(paste(-log[10], " P-value")))
-if (sum(ttadj$adj.P.Val < 0.05) > 0) {
-  abline(h=-log10(max(ttadj[ttadj$adj.P.Val < 0.05, "P.Value"])), col=grey(0.5), lty=2)
+if (sum(ttadj$adj.P.Val < 0.1) > 0) {
+  abline(h=-log10(max(ttadj[ttadj$adj.P.Val < 0.1, "P.Value"])), col=grey(0.5), lty=2)
 }
-points(ttadj[ttadj$adj.P.Val < 0.05, "logFC"], -log10(ttadj[ttadj$adj.P.Val < 0.05, "P.Value"]), pch=".", cex=4, col="red")
+points(ttadj[ttadj$adj.P.Val < 0.1, "logFC"], -log10(ttadj[ttadj$adj.P.Val < 0.1, "P.Value"]), pch=".", cex=4, col="red")
 ```
 
 We see that the number of genes differentially expressed have been increased after the correction. 
@@ -608,7 +609,7 @@ In order to do this we performa a _Gene Ontology Analysis_. We start searching f
 ```{r}
 library(hgu133a.db)
 
-DEgenes <- rownames(ttadj[ttadj$adj.P.Val < 0.05, , drop = FALSE])
+DEgenes <- rownames(ttadj[ttadj$adj.P.Val < 0.1, , drop = FALSE])
 length(DEgenes)
 
 # Select gene ID in database
@@ -625,7 +626,7 @@ But we have to take into account one thing, a problem in a GO analysis is the hi
 library(GOstats)
 
 # Begin building a parameter object as follows
-params <- new("GOHyperGParams", geneIds = DEgenes_indb$ENTREZID, universeGeneIds = universeIDs$ENTREZID, annotation = "hgu133plus2.db", ontology = "BP", pvalueCutoff = 0.05, testDirection = "over")
+params <- new("GOHyperGParams", geneIds = DEgenes_indb$ENTREZID, universeGeneIds = universeIDs$ENTREZID, annotation = "hgu133plus2.db", ontology = "BP", pvalueCutoff = 0.1, testDirection = "over")
 
 conditional(params) <- TRUE  #To consider the conditional test
 
@@ -702,7 +703,7 @@ From this two expression sets we need to extract the mean expression values for 
 
 ```{r}
 # Initial list of DE genes and vector definition
-DEgenes <- rownames(ttadj[ttadj$adj.P.Val < 0.05, , drop = FALSE])
+DEgenes <- rownames(ttadj[ttadj$adj.P.Val < 0.1, , drop = FALSE])
 recurrent_overexpressed = c()
 recurrent_underexpressed = c()
 
@@ -727,7 +728,7 @@ DEgenes_indb <- select(hgu133plus2.db, recurrent_overexpressed, "ENTREZID", "PRO
 universeIDs <- select(hgu133plus2.db, featureNames(eset_filtered), "ENTREZID", "PROBEID")
 
 # Build a parameter object
-params <- new("GOHyperGParams", geneIds = DEgenes_indb$ENTREZID, universeGeneIds = universeIDs$ENTREZID, annotation = "hgu133plus2.db", ontology = "BP", pvalueCutoff = 0.05, testDirection = "over")
+params <- new("GOHyperGParams", geneIds = DEgenes_indb$ENTREZID, universeGeneIds = universeIDs$ENTREZID, annotation = "hgu133plus2.db", ontology = "BP", pvalueCutoff = 0.1, testDirection = "over")
 
 conditional(params) <- TRUE  #To consider the conditional test
 
@@ -777,7 +778,7 @@ DEgenes_indb <- select(hgu133plus2.db, recurrent_underexpressed, "ENTREZID", "PR
 universeIDs <- select(hgu133plus2.db, featureNames(eset_filtered), "ENTREZID", "PROBEID")
 
 # Build a parameter object as follows
-params <- new("GOHyperGParams", geneIds = DEgenes_indb$ENTREZID, universeGeneIds = universeIDs$ENTREZID, annotation = "hgu133plus2.db", ontology = "BP", pvalueCutoff = 0.05, testDirection = "over")
+params <- new("GOHyperGParams", geneIds = DEgenes_indb$ENTREZID, universeGeneIds = universeIDs$ENTREZID, annotation = "hgu133plus2.db", ontology = "BP", pvalueCutoff = 0.1, testDirection = "over")
 
 conditional(params) <- TRUE  #To consider the conditional test
 
@@ -934,9 +935,9 @@ To calculate the adjusted p-values associated to each GO term, by and select tho
 
 ```{r}
 pv <- pmin(pnorm(zS), 1 - pnorm(zS))
-sum(pv < 0.05)
+sum(pv < 0.1)
 pvadj <- p.adjust(pv, method = "fdr")
-DEgs <- names(pvadj)[which(pvadj < 0.05)]
+DEgs <- names(pvadj)[which(pvadj < 0.1)]
 length(DEgs)
 head(DEgs, n = 3)
 ```
@@ -951,7 +952,7 @@ rnkOv <- rnkOv[order(rnkOv$ov, decreasing = TRUE), ]
 rnkOv$gs1 <- rownames(gsov)[rnkOv$gs1]
 rnkOv$gs2 <- rownames(gsov)[rnkOv$gs2]
 sum(rnkOv$ov == 1) ## how many pairs of gene sets are identical?
-sum(rnkOv$ov < 0.05) ## how many pairs of gene sets share less than 5% of the genes?
+sum(rnkOv$ov < 0.1) ## how many pairs of gene sets share less than 5% of the genes?
 ```
 
 
