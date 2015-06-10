@@ -722,10 +722,9 @@ for (gene in DEgenes) {
 The next step consists on repeating the previous process of GO enrichment but this  time using only the subsets of DE genes with more expression in recurrent status.
 
 ```{r}
-# Select gene ID in database, in this case the gene universe is restricted to the 
-# subeset of recurrents:
+# Select gene ID in database
 DEgenes_indb <- select(hgu133plus2.db, recurrent_overexpressed, "ENTREZID", "PROBEID")
-universeIDs <- select(hgu133plus2.db, featureNames(eset_recurrent), "ENTREZID", "PROBEID")
+universeIDs <- select(hgu133plus2.db, featureNames(eset_filtered), "ENTREZID", "PROBEID")
 
 # Build a parameter object
 params <- new("GOHyperGParams", geneIds = DEgenes_indb$ENTREZID, universeGeneIds = universeIDs$ENTREZID, annotation = "hgu133plus2.db", ontology = "BP", pvalueCutoff = 0.05, testDirection = "over")
@@ -745,7 +744,6 @@ htmlReport(hgOverCond, file = "go_overexpr_condtests.html")
 
 ```{r}
 goresults <- summary(hgOverCond)
-head(goresults)
 
 # Filtering results with less than 5 of size:
 goresults <- goresults[goresults$Size >= 5 & goresults$Count >= 5, ]
@@ -776,7 +774,7 @@ Finally, we do the same but using the underexpressed gene set:
 # Select gene ID in database
 DEgenes_indb <- select(hgu133plus2.db, recurrent_underexpressed, "ENTREZID", "PROBEID")
 
-universeIDs <- select(hgu133plus2.db, featureNames(eset_norecurrent), "ENTREZID", "PROBEID")
+universeIDs <- select(hgu133plus2.db, featureNames(eset_filtered), "ENTREZID", "PROBEID")
 
 # Build a parameter object as follows
 params <- new("GOHyperGParams", geneIds = DEgenes_indb$ENTREZID, universeGeneIds = universeIDs$ENTREZID, annotation = "hgu133plus2.db", ontology = "BP", pvalueCutoff = 0.05, testDirection = "over")
@@ -796,7 +794,6 @@ htmlReport(hgOverCond, file = "go_underexpr_condtests.html")
 
 ```{r}
 goresults <- summary(hgOverCond)
-head(goresults)
 
 # Filter results:
 goresults <- goresults[goresults$Size >= 5 & goresults$Count >= 5, ]
