@@ -607,7 +607,7 @@ Therefore, our goal is to generate _gene sets_ following the steps:
 In order to do this we performa a _Gene Ontology Analysis_. We start searching for DE genes at 10% FDR between recurrent and non-recurrent samples from the results obtained using Limma in the previous step:
 
 ```{r}
-library(hgu133a.db)
+library(hgu133plus2.db)
 
 DEgenes <- rownames(ttadj[ttadj$adj.P.Val < 0.1, , drop = FALSE])
 length(DEgenes)
@@ -818,29 +818,19 @@ print(xtab, file = "go_underexpr_results.html", type = "html")
 
 ## Gene Set Enrichment Analysis
 
-The main idea of this part is to calculate for each gene set an enrichment score (ES) as function of the changes in gene expression by the genes forming the gene set.
-
-Firstly, we generate the vector of genes based on the results of Gene Ontology:
-
-```{r}
-allHumanGO <- select(hgu133plus2.db, columns = "PROBEID", key ="GO:1902106", keytype = "GO")
-
-```
-
-
-# GSEA
 We can evaluate the differentially expressed GO terms for biological processes by using Gene Set Enrichment Analysis. The gene set collection used for the analysis is obtained from the Molecular Signatures Database [http://www.broadinstitute.org/gsea/msigdb/download_file.jsp?filePath=/resources/msigdb/5.0/c5.bp.v5.0.orig.gmt]
 
 ```{r}
 library(GSEABase)
+library(GSVAdata)
+
 eset_GSEA <- eset_filtered
-
-#gsc <- getGmt("c5.bp.v5.0.orig.gmt", geneIdType=SymbolIdentifier(), collectionType=GOCollection(ontology="BP"))
-
 data(c2BroadSets)
+
 # restrict this analysis to pathways from KEGG, REACTOME and BIOCARTA
 c2BroadSets <- c2BroadSets[c(grep("^KEGG", names(c2BroadSets)),
                grep("^REACTOME", names(c2BroadSets)), grep("^BIOCARTA", names(c2BroadSets)))]
+
 gsc <- c2BroadSets
 gsc <- mapIdentifiers(gsc, AnnoOrEntrezIdentifier(annotation(eset_GSEA)))
 ```
@@ -875,7 +865,7 @@ modSVs <- cbind(mod, svaobj$sv)
 fit <- lmFit(eset_GSEA, modSVs)
 fit <- eBayes(fit)
 ttadj <- topTable(fit, coef = 2, n = Inf)
-head(ttadj)
+ttadj[1:10, c("Gene.Symbol", "logFC", "AveExpr", "t", "P.Value", "adj.P.Val", "B")]
 ```
 
 We can verify the normality of the t-statistics on a qqplot. 
@@ -885,13 +875,13 @@ qq <- qqnorm(ttadj$t)
 qqline(ttadj$t)
 ```
 
-We can evaluate the Z-scores to detect differential expressions within genesets, using the standardized sample mean of the geneset t-statistics. To add some robustness to the calculation of the Z-scores, we limit the evaluation to genesets having more than 10. We store all moderated t-statistics for the genes forming the incidence matrix of gene sets and calculate its Z-score statistic.
+We can evaluate the Z-scores to detect differential expressions within genesets, using the standardized sample mean of the geneset t-statistics. To add some robustness to the calculation of the Z-scores, we limit the evaluation to genesets having 5 or more genes. We store all moderated t-statistics for the genes forming the incidence matrix of gene sets and calculate its Z-score statistic.
 
 ```{r}
-Im <- Im[rowSums(Im) > 10, ]
+Im <- Im[rowSums(Im) > 5, ]
 dim(Im)
 
-tGSgenes <- tt[match(colnames(Im), rownames(tt)), "t"]
+tGSgenes <- ttadj[match(colnames(Im), rownames(ttadj)), "t"]
 length(tGSgenes)
 
 zS <- sqrt(rowSums(Im)) * (as.vector(Im %*% tGSgenes)/rowSums(Im))
@@ -908,7 +898,7 @@ rnkGS <- sort(abs(zS), decreasing = TRUE)
 head(rnkGS, 20)
 ```
 
-For the GO terms NERVOUS_SYSTEM_DEVELOPMENT, SKELETAL_DEVELOPMENT and IMMUNE_RESPONSE, we can observe the mean expression values comparing the two phenotypes.
+For select some of the significant GO terms and compare the mean expression values for the two phenotypes.
 
 ```{r}
 plotGS <- function(eset, gs, pheno, ...) {
@@ -922,13 +912,20 @@ plotGS <- function(eset, gs, pheno, ...) {
   abline(a = 0, b = 1, lwd = 2, col = "red")
   }
 
-genesGS1 <- colnames(Im)[which(Im["NERVOUS_SYSTEM_DEVELOPMENT", ] == 1)]
-genesGS2 <- colnames(Im)[which(Im["SKELETAL_DEVELOPMENT", ] == 1)]
-genesGS3 <- colnames(Im)[which(Im["IMMUNE_RESPONSE", ] == 1)]
-par(mfrow = c(1, 3), mar = c(4, 5, 3, 4))
-plotGS(eset_GSEA, genesGS1, "disease_status", main = "NERVOUS_SYSTEM_DEVELOPMENT", cex.lab = 2, las = 1)
-plotGS(eset_GSEA, genesGS2, "disease_status", main = "SKELETAL_DEVELOPMENT", cex.lab = 2, las = 1)
-plotGS(eset_GSEA, genesGS3, "disease_status", main = "IMMUNE_RESPONSE", cex.lab = 2, las = 1)
+genesGS1 <- colnames(Im)[which(Im["REACTOME_CELL_SURFACE_INTERACTIONS_AT_THE_VASCULAR_WALL", ] == 1)]
+genesGS2 <- colnames(Im)[which(Im["REACTOME_TRANSLATION", ] == 1)]
+genesGS3 <- colnames(Im)[which(Im["REACTOME_STABILIZATION_OF_P53", ] == 1)]
+genesGS4 <- colnames(Im)[which(Im["REACTOME_APOPTOSIS", ] == 1)]
+genesGS5 <- colnames(Im)[which(Im["REACTOME_M_G1_TRANSITION", ] == 1)]
+genesGS6 <- colnames(Im)[which(Im["REACTOME_SLC_MEDIATED_TRANSMEMBRANE_TRANSPORT", ] == 1)]
+
+par(mfrow = c(2, 3), mar = c(4, 5, 3, 4))
+plotGS(eset_GSEA, genesGS1, "disease_status", main = "REACTOME_CELL_SURFACE_INTERACTIONS_AT_THE_VASCULAR_WALL", cex.lab = 2, las = 1)
+plotGS(eset_GSEA, genesGS2, "disease_status", main = "REACTOME_TRANSLATION", cex.lab = 2, las = 1)
+plotGS(eset_GSEA, genesGS3, "disease_status", main = "REACTOME_STABILIZATION_OF_P53", cex.lab = 2, las = 1)
+plotGS(eset_GSEA, genesGS4, "disease_status", main = "REACTOME_APOPTOSIS", cex.lab = 2, las = 1)
+plotGS(eset_GSEA, genesGS5, "disease_status", main = "REACTOME_M_G1_TRANSITION", cex.lab = 2, las = 1)
+plotGS(eset_GSEA, genesGS6, "disease_status", main = "REACTOME_SLC_MEDIATED_TRANSMEMBRANE_TRANSPORT", cex.lab = 2, las = 1)
 ```
 
 To calculate the adjusted p-values associated to each GO term, by and select those with FDR < 5%.
@@ -958,7 +955,7 @@ sum(rnkOv$ov < 0.1) ## how many pairs of gene sets share less than 5% of the gen
 
 ##Session information
 
-```{r}
+```{r sessionInfo}
 sessionInfo()
 ```
 
