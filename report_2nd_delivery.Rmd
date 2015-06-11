@@ -895,7 +895,7 @@ qqline(zS)
 The largest Z-scores correspond to the following gene sets
 ```{r}
 rnkGS <- sort(abs(zS), decreasing = TRUE)
-head(rnkGS, 20)
+head(rnkGS, 50)
 ```
 
 For select some of the significant GO terms and compare the mean expression values for the two phenotypes.
@@ -913,18 +913,18 @@ plotGS <- function(eset, gs, pheno, ...) {
   }
 
 genesGS1 <- colnames(Im)[which(Im["REACTOME_CELL_SURFACE_INTERACTIONS_AT_THE_VASCULAR_WALL", ] == 1)]
-genesGS2 <- colnames(Im)[which(Im["REACTOME_TRANSLATION", ] == 1)]
-genesGS3 <- colnames(Im)[which(Im["REACTOME_STABILIZATION_OF_P53", ] == 1)]
-genesGS4 <- colnames(Im)[which(Im["REACTOME_APOPTOSIS", ] == 1)]
-genesGS5 <- colnames(Im)[which(Im["REACTOME_M_G1_TRANSITION", ] == 1)]
+genesGS2 <- colnames(Im)[which(Im["REACTOME_P53_INDEPENDENT_DNA_DAMAGE_RESPONSE", ] == 1)]
+genesGS3 <- colnames(Im)[which(Im["REACTOME_SIGNALING_IN_IMMUNE_SYSTEM", ] == 1)]
+genesGS4 <- colnames(Im)[which(Im["REACTOME_TIGHT_JUNCTION_INTERACTIONS", ] == 1)]
+genesGS5 <- colnames(Im)[which(Im["REACTOME_HEMOSTASIS", ] == 1)]
 genesGS6 <- colnames(Im)[which(Im["REACTOME_SLC_MEDIATED_TRANSMEMBRANE_TRANSPORT", ] == 1)]
 
 par(mfrow = c(2, 3), mar = c(4, 5, 3, 4))
 plotGS(eset_GSEA, genesGS1, "disease_status", main = "REACTOME_CELL_SURFACE_INTERACTIONS_AT_THE_VASCULAR_WALL", cex.lab = 2, las = 1)
-plotGS(eset_GSEA, genesGS2, "disease_status", main = "REACTOME_TRANSLATION", cex.lab = 2, las = 1)
-plotGS(eset_GSEA, genesGS3, "disease_status", main = "REACTOME_STABILIZATION_OF_P53", cex.lab = 2, las = 1)
-plotGS(eset_GSEA, genesGS4, "disease_status", main = "REACTOME_APOPTOSIS", cex.lab = 2, las = 1)
-plotGS(eset_GSEA, genesGS5, "disease_status", main = "REACTOME_M_G1_TRANSITION", cex.lab = 2, las = 1)
+plotGS(eset_GSEA, genesGS2, "disease_status", main = "REACTOME_P53_INDEPENDENT_DNA_DAMAGE_RESPONSE", cex.lab = 2, las = 1)
+plotGS(eset_GSEA, genesGS3, "disease_status", main = "REACTOME_SIGNALING_IN_IMMUNE_SYSTEM", cex.lab = 2, las = 1)
+plotGS(eset_GSEA, genesGS4, "disease_status", main = "REACTOME_TIGHT_JUNCTION_INTERACTIONS", cex.lab = 2, las = 1)
+plotGS(eset_GSEA, genesGS5, "disease_status", main = "REACTOME_HEMOSTASIS", cex.lab = 2, las = 1)
 plotGS(eset_GSEA, genesGS6, "disease_status", main = "REACTOME_SLC_MEDIATED_TRANSMEMBRANE_TRANSPORT", cex.lab = 2, las = 1)
 ```
 
