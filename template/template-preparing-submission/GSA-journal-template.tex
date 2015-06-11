@@ -72,9 +72,15 @@ the samples were checked for batch effect, first using hierarchical clustering a
 \subsubsection*{Functional Enrichment}: we analysed the enrichment of gene ontology terms (\url{http://www.geneontology.org}) for biological processes (GO BP) using a one-tailed Fisher's exact test \citep{Fisher1922}. The significance of the GO terms is computed conditionally to the significance of its child terms \citep{Alexa2006}. GO terms formed by less than five genes or with less than five DE genes were removed to improve the reliability of the results.
 
 \section*{Results and Discussion}
-The analysis of diferential expression resulted in 255 genes differentially expressed (corrected p-value < 0.1) across the two conditions (recurrent and non-recurrent GBM). The GO enrichment analysis revealed 34 and 15 GO terms with over and underexpressed genes, respectively.
+The analysis of diferential expression resulted in 255 genes differentially expressed (ref. a volcano plot) (corrected p-value < 0.1) across the two conditions (recurrent and non-recurrent GBM).\\
+The GO enrichment revealed 43 enriched terms (ref to tabla) when considering together under and overexpressed genes. The enrichment included terms related to metabolic processes (eg. glucose metabolic process and hexose biosynthetic process), immune response (eg. regulation of T cell activation and regulation of lymphocyte proliferation), and cell proliferation (regulation of cell cycle G1/S phase transition and regulation of cell proliferation). This suggests that glioblastoma recurrence is due to heterogeneous causes, possibly combining a higher ability to escape immune response with an even more dysregulated cell cycle, supported by a higher glucose metabolism.\\
+The enrichment done with overexpressed DE genes revealed 34 different GO terms (ref to tabla). An interesting result is the enriched term `exocytosis', as it is known that invasion by cancer cells is facilitated by the secretion of enzymes that degrade the extracelular matrix, and that glioma invasion can be inhibited through inhibition of exocytosis \citep{Liu2012}. Recurrence of the tumor could thus be related with a higher capacity to invade new areas.\\
+The enrichment with underexpressed DE genes revealed 15 GO terms (ref to tabla), among which we can highlight `apoptotic signaling pathway'. It is known that defects in apoptosis signalling contribute to tumor resistance \citep{Debatin2004}, and we can therefore include it as a feature contributing to recurrence in glioblastoma.\\
 
 \section*{Conclusion}
+This study has revealed that recurrence in glioblastoma cannot be attributed to a single pathway, but must be seen as the consequence of a multiplicity of features, among which we can highlight a higher ability to escape immune response and apoptosis, and a more dysregulated cell cycle and monosacharyde metabolism.
+
+As this study is a comparison of recurrent and non-recurrent glioblastoma, we do not dispose of information to know whether this pathways are also enriched in the case of glioblastoma with respect to controls. This information would be useful to draw conclusions about whether recurrence is a consequence of a qualitatively different expression profile, or a quantitative matter (simply a consqecuence of higher expression of cancer-related pathways).
 
 \section*{Additional guidelines}
 
