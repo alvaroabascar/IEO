@@ -25,9 +25,13 @@
 
 \begin{abstract}
 
-Regretfully glioblastomas are notorious for resistance to therapy (and, consequently, also recurrence), which has been attributed to DNA-repair proficiency, a multitude of deregulated molecular pathways, and, more recently, to the particular
-Regretfully glioblastomas are notorious for resistance to therapy (and, consequently, also recurrence), which has been attributed to DNA-repair proficiency, 
-Regretfully glioblastomas are notorious for resistance to therapy (and, consequently
+Regretfully glioblastomas are notorious for resistance to therapy (and consequently for their recurrence), which has been attributed to DNA-repair proficiency, a multitude of dysregulated molecular pathways, and, more recently, to the particular...
+
+With the different approach for the analysis of the reference data, we see that recurrence is far from being attributed to few pathways, and it must be seen as the consequence of a combination of multiple over and underexpressed molecular routes. Between all of them, we can highlight, for the recurrent patients, an expression profile characterized by differentially expressed genes to give the ability to escape immune response and apoptosis, along with an upregulation of cycle and division processes, favored with a higher metabolic demand. 
+
+All the features exposed in this article, in addition to those presented by the original work of Anastasia Murat \citep{Murat2008}, represent specific genetic features of recurrent tumors. This profile can have a important clinical interest as it suppose a simple method to detect those potential recurrent tumors and adjust the treatments to avoid a possible relapse.
+
+
 \end{abstract}
 
 \setboolean{displaycopyright}{true}
@@ -46,15 +50,11 @@ Regretfully glioblastomas are notorious for resistance to therapy (and, conseque
 
 %Linkear HTML del supplementary matherial en todo lo que lo diga
 
-Glioblastoma multiforme is the most frequent and aggressive brain tumor in humans, involving glial cells, with an incidence of 2–3 cases per 100,000 person life-years in Europe and North America \citep{Bleeker2012}. Its treatment can involve chemotherapy, radiation and surgery. Median survival with standard-of-care radiation and chemotherapy with the alkylating agent temozolomide is only 15 months  \citep{Johnson2012} while the median survival without treatment is 4 and a half months. 
+Glioblastoma multiforme, involving glial cells, is the most frequent and aggressive brain tumor in humans, with an incidence of 2–3 cases per 100,000 person life-years in Europe and North America \citep{Bleeker2012}. Its treatment can involve chemotherapy, radiation and surgery. Median survival with standard-of-care radiation and chemotherapy with the alkylating agent temozolomide is only 15 months  \citep{Johnson2012} while the median survival without treatment is 4 and a half months. 
 
-Regretfully glioblastomas are notorious for resistance to therapy (and, consequently, also recurrence). The treatment for this cases requires a more aggressive combination of drugs, including nitrosoureas, temozolomide, bevacizumab, in addition to radiotherapy \citep{Weller2013}. This approach implies several risks for the patient and, therefore, it is only applied after the relapse of the patient.
+Regretfully glioblastomas are notorious for resistance to therapy (and consequently for their recurrence). The treatment for this cases requires a more aggressive combination of drugs, including nitrosoureas, temozolomide, bevacizumab, in addition to radiotherapy \citep{Weller2013}. This approach implies several risks for the patient and, therefore, it is only applied after the relapse of the patient.
 
-Biologically, the recurrence has been initially attributed to DNA-repair proficiency, cell proliferation affected and, more recently, to the particular biologic behavior of tumor stem-like cells, as it is exposed in the work of Anastasia Murat \citep{Murat2008}. In that case the HOX and EGFR related pathways were identified as the most differentially expressed using clustering techniques and rigid statistical methods. We propose here, a deeper analysis, based on more general techniques, to determine the molecular profiles specific for recurrent patients.
-
-With the different approach for the analysis of the reference data, we see the recurrence is far to be attributed to few pathways and it must be seen as the consequence of a multiple combination of over and underexpressed molecular routes. Between all of them, we can highlight, for the recurrent patients, a expression profile characterized by differentially expressed genes to give the ability to escape immune response and apoptosis and an upregulation of cycle and division processes favored with a higher metabolism demand. 
-
-All the features exposed in this article, in addition to those presented by the original work of Anastasia Murat \citep{Murat2008}, represent specific genetic features of  recurrent patients. This profile can have a important clinical interest as it suppose a simple method to detect those potential recurrent patients and adjust their treatments to avoid a possible relapse.
+Biologically, the recurrence has been initially attributed to DNA-repair proficiency, cell proliferation and, more recently, to the particular biologic behavior of tumor stem-like cells, as it is exposed in the work of Anastasia Murat \citep{Murat2008}. In that case the HOX and EGFR related pathways were identified as the most differentially expressed using clustering techniques and rigid statistical methods. We propose here a deeper analysis, based on more general techniques, to determine the molecular profiles specific for recurrent tumours.
 
 \section*{\underline{Materials and Methods}}
 
@@ -90,14 +90,14 @@ the samples were checked for batch effect, first using hierarchical clustering a
 
 The results of the analysis developed are presented below including some biological inferences. The enrichment analysis results are exposed in three different subsection and at the end the results of the GSEA can be found. 
 
-\subsubsection*{General Enrichment}: The analysis of differential expression, without considering the division between over and underexpressed genes resulted in 255 genes differentially expressed (ref. a volcano plot) (corrected p-value < 0.1) across the two conditions (recurrent and non-recurrent GBM).\\
+\subsubsection*{General Enrichment}: the analysis of differential expression, without considering the division between over and underexpressed genes resulted in 255 genes differentially expressed (ref. a volcano plot) (corrected p-value < 0.1) across the two conditions (recurrent and non-recurrent GBM).\\
 The GO enrichment revealed 43 enriched terms (table can found in the supplementary matherial) when considering together under and overexpressed genes. The enrichment include terms related to metabolic processes (eg. glucose metabolic process and hexose biosynthetic process), immune response (eg. regulation of T-cell activation and regulation of lymphocyte proliferation), and cell proliferation (regulation of cell cycle G1/S phase transition and regulation of cell proliferation).\\
 This profile suggests that glioblastoma recurrence is due to heterogeneous causes, possibly combining a higher ability to escape immune response with an even more dysregulated cell cycle, supported by a higher glucose metabolism.
 
-\subsubsection*{Underexpression Enrichment}:The enrichment with underexpressed DE genes revealed 66 different grouped in 15 GO terms (table \ref{tab:under}), among which we can highlight the `apoptotic signaling pathway'. It is known that defects in apoptosis signalling contribute to tumor resistance \citep{Debatin2004}, and we can therefore include it as a feature contributing to recurrence in glioblastoma. This situation of resistance and growth uncontrolled is also favored by the downregulation of pathways related negatively with the proliferation and cell cycle control.\\
+\subsubsection*{Underexpression Enrichment}: the enrichment with underexpressed DE genes revealed 66 different grouped in 15 GO terms (table \ref{tab:under}), among which we can highlight the `apoptotic signaling pathway'. It is known that defects in apoptosis signalling contribute to tumor resistance \citep{Debatin2004}, and we can therefore include it as a feature contributing to recurrence in glioblastoma. This situation of resistance and growth uncontrolled is also favored by the downregulation of pathways related negatively with the proliferation and cell cycle control.\\
 In addition, it is interesting to remark the bigger set of genes, 29, presented by the `Cell surface receptors pathways'. This could be related with fact that cancerous cells inhibit the exposure of death receptor to their surface in addition to other possible antigen that could be detected by the immune system \citep{Ozoren2003}.
 
-\subsubsection*{Overexpression Enrichment}:The enrichment done with overexpressed DE genes in recurrent patients revealed 34 different GO terms (table \ref{tab:over}) including in total 116 different genes. An interesting result are the enriched terms of `exocytosis' and `transport proteins' (both included in the class `Transport and Homeostasis').\\
+\subsubsection*{Overexpression Enrichment}: the enrichment done with overexpressed DE genes in recurrent patients revealed 34 different GO terms (table \ref{tab:over}) including in total 116 different genes. An interesting result are the enriched terms of `exocytosis' and `transport proteins' (both included in the class `Transport and Homeostasis').\\
 Respect the exocitosis, as it is known that invasion by cancer cells is facilitated by the secretion of enzymes that degrade the extracelular matrix, and that glioma invasion can be inhibited through inhibition of exocytosis \citep{Liu2012}. Recurrence of the tumor could thus be related with a higher capacity to invade new areas.\\
 On the other hand, about the `Transport proteins', one of the most common types of cancer resistance consists in the overexpression of drug pumps able to expel the chemotherapeutical drugs from the cell \citep{Borst2012}. The overexpression of proteins with transmembrane transport function could be related with the recurrence as the tumor cells were throwing out the temozolomide drug.
 % TODO mirar si alguna de esas proteines se encuentra en nuestra lista.
