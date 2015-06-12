@@ -101,7 +101,7 @@ library(affyPLM)
 
 ### Chip inspection
 We plot, in the first place, the chip images in order to detect artifacts and discard those samples corresponding to malfunctioning chips.
-```XXX{r chip_images, out.width="800px", dpi=400}
+```{r chip_images, out.width="800px", dpi=400}
 # Scanner plot analysis
 par(mfrow = c(3, 7), mar = c(1, 1, 3, 1))
 image(glioData)
@@ -113,7 +113,7 @@ From these images we cannot see any obvious artifact, and so far we can consider
 We can further assess the quality of the samples analysing the distribution of intensities from each chip. Chips with a distribution which differs significantly from the rest (in median or dispersion) should be taken with caution.
 
 A first step is to check the distribution of raw intensities in logarithmic scale:
-```XXX{r intensity_boxplots, out.width="800px"}
+```{r intensity_boxplots, out.width="800px"}
 # Raw intensity boxplot
 par(mar = c(4, 5, 0, 1))
 boxplot(glioData)
@@ -122,11 +122,11 @@ boxplot(glioData)
 From the previous boxplots we see that every sample follows a similar distribution. Sample number "u" appears to have a slightly narrower and displaced distribution, but not enough to consider it wrong.
 
 We can get some more information (eg. bimodalities) by means of a non-parametric density estimation of raw intensity values:
-````XXX{r density_plots, out.width="800px", dpi=300}
+````{r density_plots, out.width="800px", dpi=300}
 # Density plot
 par(mar = c(3, 3, 4, 1))
 plotDensity.AffyBatch(glioData, lwd=2, col=1:nsamples, lty=1:nsamples)
-legend('topright', sampleNames(glioData)], col=1:nsamples, lty=1:nsamples, lwd=2, inset=0.1)
+legend('topright', sampleNames(glioData), col=1:nsamples, lty=1:nsamples, lwd=2, inset=0.1)
 ```
 
 We see that some of the samples are slightly shifted to the right, but still follow the same kind of distribution.
@@ -138,7 +138,7 @@ badSamplesRawDist = ""
 ### Probe level modeling
 
 We can assess the quality of Affymetrix chips using a linear model which relates the log intensities to the probe affinity effects, the array effects and the gaussian noise. Once we have the model we can represent the residuals (middle) and weights (right). 
-````XXX{r intensities, out.width="800px"}
+````{r intensities, out.width="800px"}
 Pset = fitPLM(glioData)
 for (i in 1:nsamples) {
   par(mfrow=c(1, 2))
@@ -147,7 +147,6 @@ for (i in 1:nsamples) {
 }
 ```
 
-
 ```{r}
 badSamplesPLMResids = c("38", "27", "8")
 ```
@@ -155,7 +154,7 @@ badSamplesPLMResids = c("38", "27", "8")
 ###  Normalized Unscaled Standard Errors (NUSE)
 
 By means of the NUSE we examine the median and interquartile range of all probesets in the chip, to obtain an overall view of chip expression quality.
-````XXX{r NUSE, out.width="800px"}
+````{r NUSE, out.width="800px"}
 NUSE(Pset)
 ```
 
@@ -168,7 +167,7 @@ badSamplesNUSE = c("18", "29", "31", "65", "74")
 ### Relative Log Expression (RLE)
 Relative Log Expression Values are calculated for each of the probesets. In tis case we compare the expression on each array against the median expression value for the probeset across all of the arrays. The RLE summaries can be helpful to detect technical sources of variability that are large compared to biological variation.
 
-````XXX{r RLE, out.width="800px"}
+````{r RLE, out.width="800px"}
 # RLE
 RLE(Pset)
 ```
@@ -176,12 +175,13 @@ RLE(Pset)
 All the samples display a similar median and interquartile range, with none of them exhibiting a very noticable deviation. 
 
 Besides the graphical inspection, we can also take a look at the median and interquantile range for each sample.
-````XXX{r nuse_rle_stats}
+````{r nuse_rle_stats}
 nuseDiag = NUSE(Pset, type='stats')
 rleDiag = RLE(Pset, type='stats')
 nuseDiag
 rleDiag
 ```
+
 As in the case of the graphical inspection, we cannot see any sample which deviates significantly from the rest.
 
 ```{r}
@@ -191,7 +191,7 @@ badSamplesRLE = c()
 ## Normalization
 
 In order to normalize the Affymetrix expression data we resort to the Robust Multi-array Average (RMA) algorithm. This method integrates the background correction, between-array normalization and summary.
-```XXX{r rma}
+```{r rma}
 # RMA normalization (Robust Multi Array)
 rmaEset = rma(glioData)
 ```
@@ -201,7 +201,7 @@ rmaEset = rma(glioData)
 The MA plot can help us detect intensity dependent biases. In this case we compare (using a log ratio) the intensity of the red and green channels of the microarray (each representing a different condition). As we expect most of the genes to not be differentially expressed, most of the log ratios should be close to zero. Plotting the log ratio against the mean log intensity of both channels, we can detect dependences of the ratios on the fluorescence intensity.
 
 In this case, we expect the red line to remain close to the blue one. A deviation from it is suggesting a systematic dependence of the ratios on the intensity, indicating poor quality of the expression data.
-```XXX{r MA, out.width="800px"}
+```{r MA, out.width="800px"}
 for (i in c(1, 21, 41, 61)) {
   par(mfrow=c(5, 4), mar=c(.4, 4, .4, .4))
   MAplot(rmaEset[,i:(i+19)], plot.method='smoothScatter', cex=0.75, ref.title='')
@@ -227,7 +227,7 @@ qaDiag[badSamplesMA, "MA"] <- TRUE
 
 qaDiag$Failed <- rowSums(qaDiag)
 qaDiag <- qaDiag[order(qaDiag$Failed, decreasing = TRUE), ]
-qaDiag
+head(qaDiag, 10)
 ```
 
 In general we have achieved very good results as none of the samples fail more than 1 tests so we decide to continue the study with all the samples.
