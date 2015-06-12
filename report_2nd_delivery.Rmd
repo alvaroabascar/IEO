@@ -928,7 +928,7 @@ plotGS(eset_GSEA, genesGS5, "disease_status", main = "REACTOME_HEMOSTASIS", cex.
 plotGS(eset_GSEA, genesGS6, "disease_status", main = "REACTOME_SLC_MEDIATED_TRANSMEMBRANE_TRANSPORT", cex.lab = 2, las = 1)
 ```
 
-To calculate the adjusted p-values associated to each GO term, by and select those with FDR < 5%.
+To calculate the adjusted p-values associated to each GO term, by and select those with FDR < 10%.
 
 ```{r}
 pv <- pmin(pnorm(zS), 1 - pnorm(zS))
