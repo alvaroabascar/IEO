@@ -88,10 +88,11 @@ the samples were checked for batch effect, first using hierarchical clustering a
 
 \section*{\underline{Results and Discussion}}
 
-The results of the analysis developed are presented below including some biological inferences. The enrichment analysis results are exposed in three different subsection and at the end the results of the GSEA can be found. 
+The analysis of differential expression show 255 genes differentially expressed (ref. a volcano plot) (corrected p-value < 0.1) across the two conditions (recurrent and non-recurrent GBM). From this set of genes we performed the Gene Ontology (GO) enrichment analysis in general and dividing by under and overexpressed genes in recurrent data. Additionally, a simple GSEA was carried out to check similarities and possible new pathways DE. The results of the analysis developed are presented below including some biological inferences. The GO enrichment analysis are exposed in three different subsection and at the end the results of the GSEA can be found.\\
+A general overview of the results obtained can be found in the table \ref{tab:resume}.
 
-\subsubsection*{General Enrichment}: the analysis of differential expression, without considering the division between over and underexpressed genes resulted in 255 genes differentially expressed (ref. a volcano plot) (corrected p-value < 0.1) across the two conditions (recurrent and non-recurrent GBM).\\
-The GO enrichment revealed 43 enriched terms (table can found in the supplementary matherial) when considering together under and overexpressed genes. The enrichment include terms related to metabolic processes (eg. glucose metabolic process and hexose biosynthetic process), immune response (eg. regulation of T-cell activation and regulation of lymphocyte proliferation), and cell proliferation (regulation of cell cycle G1/S phase transition and regulation of cell proliferation).\\
+\subsubsection*{General Enrichment}:The GO enrichment revealed 43 enriched terms (table can found in the supplementary matherial) when considering together under and overexpressed genes. In total, 161 genes significantly differentially expressed were included in this group.\\
+The enrichment include terms related to metabolic processes (eg. glucose metabolic process and hexose biosynthetic process), immune response (eg. regulation of T-cell activation and regulation of lymphocyte proliferation), and cell proliferation (regulation of cell cycle G1/S phase transition and regulation of cell proliferation).\\
 This profile suggests that glioblastoma recurrence is due to heterogeneous causes, possibly combining a higher ability to escape immune response with an even more dysregulated cell cycle, supported by a higher glucose metabolism.
 
 \subsubsection*{Underexpression Enrichment}: the enrichment with underexpressed DE genes revealed 66 different grouped in 15 GO terms (table \ref{tab:under}), among which we can highlight the `apoptotic signaling pathway'. It is known that defects in apoptosis signalling contribute to tumor resistance \citep{Debatin2004}, and we can therefore include it as a feature contributing to recurrence in glioblastoma. This situation of resistance and growth uncontrolled is also favored by the downregulation of pathways related negatively with the proliferation and cell cycle control.\\
@@ -104,6 +105,28 @@ On the other hand, about the `Transport proteins', one of the most common types 
 
 \subsubsection*{Gene Set Enrichment Analysis}:
 
+\begin{table*}[htbp]
+\centering
+\caption{\bf Resume of results}
+\begin{tableminipage}{\textwidth}
+\begin{tabularx}{\textwidth}{m{3.4cm}m{2.6cm}m{1.5cm}m{9.2cm}}
+\hline
+Condition & Number of terms\footnote{Gene Ontology terms or Pathway terms} & nº genes & Important functions included\\
+\hline
+
+General GO Enrichment & 43 & 161 & Metabolic processes, Regulation of differentiation, Immune response, Intracellular transport, Extracellular transport \& Homeostasis, negative regulation of cell cycle G1/S phase transition, Cell adhesion, Anatomical cell structure, Protein modification. \\
+
+Underexpression GO Enrichment & 15 & 66 & Cell surface, Negative regulation of cell cycle, proliferation \& apoptisis, Immune response, Cell adhesion, RNA processing, Negative regulation of protein transport.\\
+
+Overexpression GO Enrichment & 34 & 116 & Negative regulation of cell death \& apoptosis, Metabolic processes, Cell structure organization, Transport and Homeostasis, DNA \& Protein modification, Immune response \& Inflammation.\\
+
+Gene Set Enrichment Analysis & 32 & 45 & ATG10, SNF8, RPS9, BAX, TIMM17A, PRMT1, PIN1, OGT, PSMD4, OGT , FBXW7, PSMC1, HNMT, RPL27A, DPH5, CYR61, GSTP1,  PCMTD1, PSMD3,  CTNNB1, ASB1, PEX16,  SEC31A,PIN1, RGS4, MYDGF, TRIP6, CTNNB1, HOMER3, CCL5 , WDR46, CCNB1IP1\\
+
+\hline
+\end{tabularx}
+  \label{tab:resume}
+\end{tableminipage}
+\end{table*}
 
 \section*{\underline{Conclusion}}
 In the paper where the data was extracted \citep{Murat2008} the differentially expressed genes related with the survival of the patients were those participating in DNA-repair proficiency and stem-like behaviour (HOX and EGFR). Here, we have extended their results studying the genetic profile of recurrent patients of glioblastoma. The general overview of results shows clearly the recurrence cannot be attributed to a single pathway and it must be seen as the consequence of a multiple set of features, among which we can highlight a higher ability to escape immune response and apoptosis, and a more dysregulated cell cycle and monosacharyde metabolism, all of the overexpressed respect the non-recurrent profile.
@@ -201,5 +224,9 @@ Negative regulation of apoptosis \& cell death & GO:0030111, GO:0060548, GO:0043
   \label{tab:over}
 \end{tableminipage}
 \end{table*}
+
+
+
+
 
 \end{document}

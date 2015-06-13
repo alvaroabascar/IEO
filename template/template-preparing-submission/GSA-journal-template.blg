@@ -11,45 +11,45 @@ Warning--empty journal in Bleeker2012
 Warning--empty school in Bolstad2004
 Warning--empty journal in Borst2012
 Warning--empty journal in Weller2013
-You've used 19 entries,
+You've used 21 entries,
             2739 wiz_defined-function locations,
-            748 strings with 9524 characters,
-and the built_in function-call counts, 11988 in all, are:
-= -- 996
-> -- 939
+            762 strings with 10085 characters,
+and the built_in function-call counts, 13492 in all, are:
+= -- 1114
+> -- 1082
 < -- 9
-+ -- 310
-- -- 291
-* -- 1356
-:= -- 2100
-add.period$ -- 35
-call.type$ -- 19
-change.case$ -- 191
-chr.to.int$ -- 19
-cite$ -- 23
-duplicate$ -- 444
-empty$ -- 683
-format.name$ -- 316
-if$ -- 2274
++ -- 357
+- -- 336
+* -- 1536
+:= -- 2365
+add.period$ -- 39
+call.type$ -- 21
+change.case$ -- 216
+chr.to.int$ -- 21
+cite$ -- 25
+duplicate$ -- 492
+empty$ -- 757
+format.name$ -- 363
+if$ -- 2556
 int.to.chr$ -- 1
 int.to.str$ -- 1
-missing$ -- 18
-newline$ -- 60
-num.names$ -- 76
-pop$ -- 144
+missing$ -- 20
+newline$ -- 66
+num.names$ -- 84
+pop$ -- 163
 preamble$ -- 1
-purify$ -- 173
+purify$ -- 196
 quote$ -- 0
-skip$ -- 226
+skip$ -- 248
 stack$ -- 0
-substring$ -- 657
-swap$ -- 153
+substring$ -- 729
+swap$ -- 171
 text.length$ -- 1
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 171
+type$ -- 189
 warning$ -- 4
-while$ -- 90
+while$ -- 100
 width$ -- 0
-write$ -- 207
+write$ -- 229
 (There was 1 error message)
