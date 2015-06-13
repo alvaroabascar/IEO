@@ -132,13 +132,13 @@ legend('topright', sampleNames(glioData), col=1:nsamples, lty=1:nsamples, lwd=2,
 We see that some of the samples are slightly shifted to the right, but still follow the same kind of distribution.
 
 ```{r}
-badSamplesRawDist = ""
+badSamplesRawDist = c()
 ```
 
 ### Probe level modeling
 
 We can assess the quality of Affymetrix chips using a linear model which relates the log intensities to the probe affinity effects, the array effects and the gaussian noise. Once we have the model we can represent the residuals (middle) and weights (right). 
-````{r intensities, out.width="800px"}
+````{r intensities, out.width="600px"}
 Pset = fitPLM(glioData)
 for (i in 1:nsamples) {
   par(mfrow=c(1, 2))
@@ -227,7 +227,7 @@ qaDiag[badSamplesMA, "MA"] <- TRUE
 
 qaDiag$Failed <- rowSums(qaDiag)
 qaDiag <- qaDiag[order(qaDiag$Failed, decreasing = TRUE), ]
-head(qaDiag, 10)
+qaDiag
 ```
 
 In general we have achieved very good results as none of the samples fail more than 1 tests so we decide to continue the study with all the samples.
@@ -298,7 +298,7 @@ d = as.dist(1 - cor(exprs(eset), method="spearman"))
 
 Using _hclust_ we perform the hierarchical clustering which can be easily understood, showing it in a [dendrogram](http://en.wikipedia.org/wiki/Dendrogram). We are trying to identify the batch effect (the batch to which each sample belongs is indicated by the colour of the label), and a differential clustering separating samples by survival time (indicated in the sample label).
 
-```{r}
+```{r, fig.width="800px"}
 # Hierarchical analysis:
 
 sampleClustering = hclust(d)
@@ -529,7 +529,7 @@ summary(res)
 
 We can see from the summary result that there are no significantly expressed genes. We can also check the results from the distribution of p-values for all the genes and the volcano plot.
 
-```{r}
+```{r, fig.width="800px"}
 tt <- topTable(fit, coef = 2, n = Inf)
 par(mfrow = c(1, 2), mar = c(4, 5, 2, 2))
 hist(tt$P.Value, xlab = "Raw P-values", main = "")
@@ -553,7 +553,7 @@ We see in red in the volcano plot those genes apparently differentially expresse
 
 We can adjust for the contribution of covariates. As proposed in the paper, we adjust for MGMT methylation status and for age>50.
 
-```{r}
+```{r, fig.width="800px"}
 eset_filtered$mgmtM = eset_filtered$mgmt == "mgmt status: M"
 
 # Surrogate Variables
@@ -639,7 +639,7 @@ htmlReport(hgOverCond, file = "gocondtests.html")
 # browseURL("gocondtests.html")
 ```
 
-# TODO : Alguna forma de añadir ese html como links y explicar mas o menos que se ve!
+The table of results can be found [here](http://ieoproject.tk/ieo/gocondtests.html).
 
 The resulting object from a call to hyperGTest() belongs to the class of objects GOHyperGResult. We can find out what methods are available to explore the results in detail. A few of the more useful ones are:
 
@@ -686,7 +686,7 @@ xtab <- xtable(goresults, align = "l|c|r|r|r|r|r|p{3cm}|p{3cm}|")
 print(xtab, file = "goresults.html", type = "html")
 ```
 
-#TODO : de nuevo, tratar de linkear este html y poner un poc que tienen los genes que aparecen
+The table of results can be found [here](http://ieoproject.tk/ieo/goresults.html).
 
 ## Using GO enrichment in the study of Over/Under-expressed genes
 
@@ -741,7 +741,7 @@ htmlReport(hgOverCond, file = "go_overexpr_condtests.html")
 # browseURL("gocondtests.html")
 ```
 
-# TODO : Alguna forma de añadir ese html como links y explicar mas o menos que se
+The table of results can be found [here](http://ieoproject.tk/ieo/go_overexpr_condtests.html).
 
 ```{r}
 goresults <- summary(hgOverCond)
@@ -767,6 +767,8 @@ xtab <- xtable(goresults, align = "l|c|r|r|r|r|r|p{3cm}|p{3cm}|")
 print(xtab, file = "go_overexpr_results.html", type = "html")
 ```
 
+The table of results can be found [here](http://ieoproject.tk/ieo/go_overexpr_results.html).
+
 ###Underexpressed genes in recurrent state:
 
 Finally, we do the same but using the underexpressed gene set:
@@ -791,7 +793,7 @@ htmlReport(hgOverCond, file = "go_underexpr_condtests.html")
 # browseURL("gocondtests.html")
 ```
 
-# TODO : Alguna forma de añadir ese html como links y explicar mas o menos que se ve!
+The table of results can be found [here](http://ieoproject.tk/ieo/go_underexpr_condtests.html).
 
 ```{r}
 goresults <- summary(hgOverCond)
@@ -816,9 +818,11 @@ xtab <- xtable(goresults, align = "l|c|r|r|r|r|r|p{3cm}|p{3cm}|")
 print(xtab, file = "go_underexpr_results.html", type = "html")
 ```
 
+The table of results can be found [here](http://ieoproject.tk/ieo/go_underexpr_results.html).
+
 ## Gene Set Enrichment Analysis
 
-We can evaluate the differentially expressed GO terms for biological processes by using Gene Set Enrichment Analysis. The gene set collection used for the analysis is obtained from the Molecular Signatures Database [http://www.broadinstitute.org/gsea/msigdb/download_file.jsp?filePath=/resources/msigdb/5.0/c5.bp.v5.0.orig.gmt]
+We can evaluate the differentially expressed GO terms for biological processes by using Gene Set Enrichment Analysis. The gene set collection used for the analysis is obtained from the [Molecular Signatures Database](http://www.broadinstitute.org/gsea/msigdb/download_file.jsp?filePath=/resources/msigdb/5.0/c5.bp.v5.0.orig.gmt).
 
 ```{r}
 library(GSEABase)
@@ -834,6 +838,7 @@ c2BroadSets <- c2BroadSets[c(grep("^KEGG", names(c2BroadSets)),
 gsc <- c2BroadSets
 gsc <- mapIdentifiers(gsc, AnnoOrEntrezIdentifier(annotation(eset_GSEA)))
 ```
+
 We create the incidence matrix of the expression set and the gene set collection.
 
 ```{r}
@@ -920,12 +925,12 @@ genesGS5 <- colnames(Im)[which(Im["REACTOME_HEMOSTASIS", ] == 1)]
 genesGS6 <- colnames(Im)[which(Im["REACTOME_SLC_MEDIATED_TRANSMEMBRANE_TRANSPORT", ] == 1)]
 
 par(mfrow = c(2, 3), mar = c(4, 5, 3, 4))
-plotGS(eset_GSEA, genesGS1, "disease_status", main = "REACTOME_CELL_SURFACE_INTERACTIONS_AT_THE_VASCULAR_WALL", cex.lab = 2, las = 1)
-plotGS(eset_GSEA, genesGS2, "disease_status", main = "REACTOME_P53_INDEPENDENT_DNA_DAMAGE_RESPONSE", cex.lab = 2, las = 1)
-plotGS(eset_GSEA, genesGS3, "disease_status", main = "REACTOME_SIGNALING_IN_IMMUNE_SYSTEM", cex.lab = 2, las = 1)
-plotGS(eset_GSEA, genesGS4, "disease_status", main = "REACTOME_TIGHT_JUNCTION_INTERACTIONS", cex.lab = 2, las = 1)
-plotGS(eset_GSEA, genesGS5, "disease_status", main = "REACTOME_HEMOSTASIS", cex.lab = 2, las = 1)
-plotGS(eset_GSEA, genesGS6, "disease_status", main = "REACTOME_SLC_MEDIATED_TRANSMEMBRANE_TRANSPORT", cex.lab = 2, las = 1)
+plotGS(eset_GSEA, genesGS1, "disease_status", main = "REACTOME_CELL_SURFACE_INTERACTIONS_AT_THE_VASCULAR_WALL", cex.lab = 1, las = 1)
+plotGS(eset_GSEA, genesGS2, "disease_status", main = "REACTOME_P53_INDEPENDENT_DNA_DAMAGE_RESPONSE", cex.lab = 1, las = 1)
+plotGS(eset_GSEA, genesGS3, "disease_status", main = "REACTOME_SIGNALING_IN_IMMUNE_SYSTEM", cex.lab = 1, las = 1)
+plotGS(eset_GSEA, genesGS4, "disease_status", main = "REACTOME_TIGHT_JUNCTION_INTERACTIONS", cex.lab = 1, las = 1)
+plotGS(eset_GSEA, genesGS5, "disease_status", main = "REACTOME_HEMOSTASIS", cex.lab = 1, las = 1)
+plotGS(eset_GSEA, genesGS6, "disease_status", main = "REACTOME_SLC_MEDIATED_TRANSMEMBRANE_TRANSPORT", cex.lab = 1, las = 1)
 ```
 
 To calculate the adjusted p-values associated to each GO term, by and select those with FDR < 10%.
