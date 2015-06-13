@@ -91,21 +91,15 @@ the samples were checked for batch effect, first using hierarchical clustering a
 The analysis of differential expression show 255 genes differentially expressed (ref. a volcano plot) (corrected p-value < 0.1) across the two conditions (recurrent and non-recurrent GBM). From this set of genes we performed the Gene Ontology (GO) enrichment analysis in general and dividing by under and overexpressed genes in recurrent data. Additionally, a simple GSEA was carried out to check similarities and possible new pathways DE. The results of the analysis developed are presented below including some biological inferences. The GO enrichment analysis are exposed in three different subsection and at the end the results of the GSEA can be found.\\
 A general overview of the results obtained can be found in the table \ref{tab:resume}.
 
-\subsubsection*{General Enrichment}:The GO enrichment revealed 43 enriched terms (table can found in the supplementary matherial) when considering together under and overexpressed genes. In total, 161 genes significantly differentially expressed were included in this group.\\
-The enrichment include terms related to metabolic processes (eg. glucose metabolic process and hexose biosynthetic process), immune response (eg. regulation of T-cell activation and regulation of lymphocyte proliferation), and cell proliferation (regulation of cell cycle G1/S phase transition and regulation of cell proliferation).\\
-This profile suggests that glioblastoma recurrence is due to heterogeneous causes, possibly combining a higher ability to escape immune response with an even more dysregulated cell cycle, supported by a higher glucose metabolism.
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=0.4]{volcano.png}
+	\caption{Volcano plot showing DE genes (red), with negative and positive fold changes indicating underexpressed and overexpressed genes, respectively, in recurrent tumours.}
+	\label{fig:volcano}
+\end{figure}
 
-\subsubsection*{Underexpression Enrichment}: the enrichment with underexpressed DE genes revealed 66 different grouped in 15 GO terms (table \ref{tab:under}), among which we can highlight the `apoptotic signaling pathway'. It is known that defects in apoptosis signalling contribute to tumor resistance \citep{Debatin2004}, and we can therefore include it as a feature contributing to recurrence in glioblastoma. This situation of resistance and growth uncontrolled is also favored by the downregulation of pathways related negatively with the proliferation and cell cycle control.\\
-In addition, it is interesting to remark the bigger set of genes, 29, presented by the `Cell surface receptors pathways'. This could be related with fact that cancerous cells inhibit the exposure of death receptor to their surface in addition to other possible antigen that could be detected by the immune system \citep{Ozoren2003}.
 
-\subsubsection*{Overexpression Enrichment}: the enrichment done with overexpressed DE genes in recurrent patients revealed 34 different GO terms (table \ref{tab:over}) including in total 116 different genes. An interesting result are the enriched terms of `exocytosis' and `transport proteins' (both included in the class `Transport and Homeostasis').\\
-Respect the exocitosis, as it is known that invasion by cancer cells is facilitated by the secretion of enzymes that degrade the extracelular matrix, and that glioma invasion can be inhibited through inhibition of exocytosis \citep{Liu2012}. Recurrence of the tumor could thus be related with a higher capacity to invade new areas.\\
-On the other hand, about the `Transport proteins', one of the most common types of cancer resistance consists in the overexpression of drug pumps able to expel the chemotherapeutical drugs from the cell \citep{Borst2012}. The overexpression of proteins with transmembrane transport function could be related with the recurrence as the tumor cells were throwing out the temozolomide drug.
-% TODO mirar si alguna de esas proteines se encuentra en nuestra lista.
-
-\subsubsection*{Gene Set Enrichment Analysis}:
-
-\begin{table*}[htbp]
+\begin{table*}[!htbp]
 \centering
 \caption{\bf Resume of results}
 \begin{tableminipage}{\textwidth}
@@ -127,6 +121,20 @@ Gene Set Enrichment Analysis & 32 & 45 & ATG10, SNF8, RPS9, BAX, TIMM17A, PRMT1,
   \label{tab:resume}
 \end{tableminipage}
 \end{table*}
+
+\subsubsection*{General Enrichment}:The GO enrichment revealed 43 enriched terms (table can found in the supplementary matherial) when considering together under and overexpressed genes. In total, 161 genes significantly differentially expressed were included in this group.\\
+The enrichment include terms related to metabolic processes (eg. glucose metabolic process and hexose biosynthetic process), immune response (eg. regulation of T-cell activation and regulation of lymphocyte proliferation), and cell proliferation (regulation of cell cycle G1/S phase transition and regulation of cell proliferation).\\
+This profile suggests that glioblastoma recurrence is due to heterogeneous causes, possibly combining a higher ability to escape immune response with an even more dysregulated cell cycle, supported by a higher glucose metabolism.
+
+\subsubsection*{Underexpression Enrichment}: the enrichment with underexpressed DE genes revealed 66 different grouped in 15 GO terms (table \ref{tab:under}), among which we can highlight the `apoptotic signaling pathway'. It is known that defects in apoptosis signalling contribute to tumor resistance \citep{Debatin2004}, and we can therefore include it as a feature contributing to recurrence in glioblastoma. This situation of resistance and growth uncontrolled is also favored by the downregulation of pathways related negatively with the proliferation and cell cycle control.\\
+In addition, it is interesting to remark the bigger set of genes, 29, presented by the `Cell surface receptors pathways'. This could be related with fact that cancerous cells inhibit the exposure of death receptor to their surface in addition to other possible antigen that could be detected by the immune system \citep{Ozoren2003}.
+
+\subsubsection*{Overexpression Enrichment}: the enrichment done with overexpressed DE genes in recurrent patients revealed 34 different GO terms (table \ref{tab:over}) including in total 116 different genes. An interesting result are the enriched terms of `exocytosis' and `transport proteins' (both included in the class `Transport and Homeostasis').\\
+Respect the exocitosis, as it is known that invasion by cancer cells is facilitated by the secretion of enzymes that degrade the extracelular matrix, and that glioma invasion can be inhibited through inhibition of exocytosis \citep{Liu2012}. Recurrence of the tumor could thus be related with a higher capacity to invade new areas.\\
+On the other hand, about the `Transport proteins', one of the most common types of cancer resistance consists in the overexpression of drug pumps able to expel the chemotherapeutical drugs from the cell \citep{Borst2012}. The overexpression of proteins with transmembrane transport function could be related with the recurrence as the tumor cells were throwing out the temozolomide drug.
+% TODO mirar si alguna de esas proteines se encuentra en nuestra lista.
+
+\subsubsection*{Gene Set Enrichment Analysis}:
 
 \section*{\underline{Conclusion}}
 In the paper where the data was extracted \citep{Murat2008} the differentially expressed genes related with the survival of the patients were those participating in DNA-repair proficiency and stem-like behaviour (HOX and EGFR). Here, we have extended their results studying the genetic profile of recurrent patients of glioblastoma. The general overview of results shows clearly the recurrence cannot be attributed to a single pathway and it must be seen as the consequence of a multiple set of features, among which we can highlight a higher ability to escape immune response and apoptosis, and a more dysregulated cell cycle and monosacharyde metabolism, all of the overexpressed respect the non-recurrent profile.
