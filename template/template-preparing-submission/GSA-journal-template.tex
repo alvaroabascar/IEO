@@ -2,6 +2,8 @@
 
 \include{hyperref}
 
+
+
 \articletype{inv} % article type
 % {inv} Investigation 
 % {gs} Genomic Selection
@@ -131,18 +133,16 @@ In addition, it is interesting to remark the bigger set of genes, 29, present in
 \subsubsection*{Overexpression Enrichment}: the enrichment done with overexpressed DE genes in recurrent patients revealed 34 different GO terms (table \ref{tab:over}) including a total of 116 different genes. An interesting result is the presence of the enriched terms `exocytosis' and `transport proteins' (both included in the class `Transport and Homeostasis').\\
 With respect to exocitosis, it is known that invasion by cancer cells is facilitated by the secretion of enzymes that degrade the extracelular matrix, and that glioma invasion can be inhibited through inhibition of exocytosis \citep{Liu2012}. Recurrence of the tumor could thus be related with a higher capacity to invade new areas.\\
 On the other hand, about the `Transport proteins', one of the most common types of cancer resistance consists on the overexpression of drug pumps able to expel the chemotherapeutical drugs from the cell \citep{Borst2012}. The overexpression of proteins with transmembrane transport function could also be related with recurrence, as the tumour cells would be able to avoid the toxic effect of temozolomide by expelling it from the cytosol or just generating gradients in order to avoid the uptake.
-
+\begin{figure}[!h]
+	\centering
+	\includegraphics[scale=0.4]{gsea.png}
+	\caption{ Example of some relevant enriched gene sets: a) Reactome cell surface interactions at the vascular wall. b) Reactome p53 independent DNA damage response. c) Reactome signaling in immune system. d) Reactome tight junction interactions. e) Reactome hemostasis. f) Reactome SLC mediated transmembrane transport. }
+	\label{fig:gsea}
+\end{figure}
 \subsubsection*{Gene Set Enrichment Analysis}: with this analysis 304 pathways were found to be differentially expressed in the recurrent tumours. Among all the results, it is interesting to remark the alteration of metabolism, cell cycle, immune system and apoptosis. All of this terms were also present along the gene ontology enrichment analysis.\\
 However, this analysis highlights as one of the most important pathways (highest Z-score) the p53-independent DNA damage response from the Reactome database. This result matches with one of the outcomes proposed by Anastasia Murat \citep{Murat2008}, who explains that tumour resistance could be due to a higher ability to repair DNA damages like those produced by temozolomide.\\
 In the figure \ref{fig:gsea} six biologically interesting pathways were selected to provide a visual clue of the differential expression among recurrent and not recurrent tumours. For example, in the case of p53-independent repair, it is possibly to see that in recurrent tumours the genes are slightly but consistently overexpressed.\\
 The whole list of pathways altered in recurrent tumours can be found in the \href{http://ieoproject.tk/ieo/abella_casals_miravet.html}{supplementary material}.
-
-\begin{figure}[!h]
-	\centering
-	\includegraphics[scale=0.4]{gsea.png}
-	\caption{ ALVARO }
-	\label{fig:gsea}
-\end{figure}
 
 \section*{\underline{Conclusion}}
 \cite{Murat2008} show that the genes related with the survival of the patients were those participating in DNA-repair proficiency and stem cell-like behaviour (HOX and EGFR). Here, we have extended their results studying the genetic profile of recurrent patients of glioblastoma. A general overview of the results shows clearly that recurrence cannot be attributed to a single pathway, and it must be seen as the consequence of a multiple set of features, among which we can highlight a higher ability to escape immune response and apoptosis and a more dysregulated cell cycle and monosacharyde metabolism.
@@ -153,8 +153,9 @@ In conclusion, this article exposes a statistically significant genetic profile 
 
 \bibliography{example-bibliography}
 
+\newpage
+
 \begin{table*}[htbp]
-\centering
 \caption{\bf Underexpressed Genes}
 \begin{tableminipage}{\textwidth}
 \begin{tabularx}{\textwidth}{m{3cm}m{3.5cm}m{1.2cm}m{9.2cm}}
@@ -183,7 +184,7 @@ Activation of protein kinase activity & GO:0032147 & 5 & TOM1L1, KRAS, PDPK1, PR
 \end{tableminipage}
 \end{table*}
 
-\pagebreak
+\newpage
  
 
 \begin{table*}[htbp]
