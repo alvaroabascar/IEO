@@ -3,7 +3,6 @@
 \include{hyperref}
 
 
-
 \articletype{inv} % article type
 % {inv} Investigation 
 % {gs} Genomic Selection
@@ -23,7 +22,7 @@
 
 \runningtitle{GENETICS | INVESTIGATION}
 
-\correspondingauthor{Corresponding Author}
+\correspondingauthor{Abella-Casals-Miravet}
 
 \begin{abstract}
 
@@ -127,10 +126,10 @@ Gene Set Enrichment Analysis & 304 & NA\footnote{No concrete genes were consider
 The enrichment include terms related to metabolic processes (eg. glucose metabolic process and hexose biosynthetic process), immune response (eg. regulation of T-cell activation and regulation of lymphocyte proliferation), and cell proliferation (regulation of cell cycle G1/S phase transition and cell proliferation).\\
 This profile suggests that glioblastoma recurrence is due to heterogeneous causes, possibly combining a higher ability to escape immune response with an even more dysregulated cell cycle, supported by a higher glucose metabolism.
 
-\subsubsection*{Underexpression Enrichment}: the enrichment with underexpressed DE genes revealed 66 different genes grouped in 15 GO terms (table \ref{tab:under}), among which we can highlight the `apoptotic signaling pathway'. It is known that defects in apoptosis signalling contribute to tumour resistance \citep{Debatin2004}, and we can therefore include it as a feature contributing to recurrence in glioblastoma. This situation of resistance and uncontrolled growth is also favored by the downregulation of pathways negatively related with the proliferation and cell cycle control.\\
+\subsubsection*{Underexpression Enrichment}: the enrichment with underexpressed DE genes revealed 66 different genes grouped in 15 GO terms (table A1 in the appendix), among which we can highlight the `apoptotic signaling pathway'. It is known that defects in apoptosis signalling contribute to tumour resistance \citep{Debatin2004}, and we can therefore include it as a feature contributing to recurrence in glioblastoma. This situation of resistance and uncontrolled growth is also favored by the downregulation of pathways negatively related with the proliferation and cell cycle control.\\
 In addition, it is interesting to remark the bigger set of genes, 29, present in the `Cell surface receptors pathways'. This could be related with the fact that cancerous cells inhibit the exposure on their surface of cell death receptors, in addition to other possible antigens that could be detected by the immune system \citep{Ozoren2003}.
 
-\subsubsection*{Overexpression Enrichment}: the enrichment done with overexpressed DE genes in recurrent patients revealed 34 different GO terms (table \ref{tab:over}) including a total of 116 different genes. An interesting result is the presence of the enriched terms `exocytosis' and `transport proteins' (both included in the class `Transport and Homeostasis').\\
+\subsubsection*{Overexpression Enrichment}: the enrichment done with overexpressed DE genes in recurrent patients revealed 34 different GO terms (table A2 in the appendix) including a total of 116 different genes. An interesting result is the presence of the enriched terms `exocytosis' and `transport proteins' (both included in the class `Transport and Homeostasis').\\
 With respect to exocitosis, it is known that invasion by cancer cells is facilitated by the secretion of enzymes that degrade the extracelular matrix, and that glioma invasion can be inhibited through inhibition of exocytosis \citep{Liu2012}. Recurrence of the tumor could thus be related with a higher capacity to invade new areas.\\
 On the other hand, about the `Transport proteins', one of the most common types of cancer resistance consists on the overexpression of drug pumps able to expel the chemotherapeutical drugs from the cell \citep{Borst2012}. The overexpression of proteins with transmembrane transport function could also be related with recurrence, as the tumour cells would be able to avoid the toxic effect of temozolomide by expelling it from the cytosol or just generating gradients in order to avoid the uptake.
 \begin{figure}[!h]
@@ -152,66 +151,5 @@ As this study is a comparison of recurrent and non-recurrent glioblastoma, we do
 In conclusion, this article exposes a statistically significant genetic profile related with the relapse of glioblastoma patients due to the recurrence of the tumor. As the glioblastoma is one of the most recurrent types of cancer \citep{Bleeker2012}, the definition of a concrete expression profile opens the possibility of having a way to prevent and detect the potential recurrent patients in order to personalize the treatment with the current approaches to recurrent tumours \citep{Weller2013}. 
 
 \bibliography{example-bibliography}
-
-\newpage
-
-\begin{table*}[htbp]
-\caption{\bf Underexpressed Genes}
-\begin{tableminipage}{\textwidth}
-\begin{tabularx}{\textwidth}{m{3cm}m{3.5cm}m{1.2cm}m{9.2cm}}
-\hline
-Biological Processes & GOBPID terms & nº genes & Genes included\footnote{Genes can overlap between GO terms.} \\
-\hline
-
-Cell surface receptors pathways & GO:0007166 & 29 & ACTR2, LILRB1, CYLD, ATP6V0E2, EFNB2, CCNY, PEG10, NPB, ADGRD1, TMEM145, IFNGR1, ITGB8, KRAS, NCK1, PDPK1, PRKACB, BIRC6, CEACAM1, RGS18, BMP2, TIAM1, CA2, CPEB4, DYRK2, CBL, KAT2B, ACVR1B, USP34, P2RY14\\
-
-Negative regulation of cell cycle, proliferation \& apoptosis& GO:0051726, GO:0008285, GO:0097190 & 23 & TMOD3, FABP7, LILRB1,TOM1L1, CD33, PRPF40A, DYRK2, NCK1, PRKACB, CYLD, EFNB2, PDPK1, NACC2, ARL6IP5, BIRC6, RBL2, CCNY, TIAM1, SF1, KAT2B, CTBP1, ACVR1B , BMP2\\
-
-Immune response \& Cell Adhesion & GO:0045088, GO:0051249, GO:0002684, GO:0006955, GO:1903037, GO:0034110  & 15 & PDPK1, CYLD, SUSD4, TLR5, CA2, ACTR2, SPPL2A, LST1, HAMP, LILRB1, PRKACB, IFNGR1, ACVR1B, SASH3, NCK\\
-
-Regulation of hydrolase activity & GO:0051336 & 14 & ARL6IP5, CST3, ITSN2, ASAP1, PDPK1, SERPINB6, PRKACB, BIRC6, ARHGAP9, RGS18, BMP2, WNK1, TIAM1, DENND1C\\ 
-
-RNA processing & GO:0006396 & 9 & SRRM1, PAPD4, DHX36, HNRNPA2B1, PRPF40A, RP9, SF1, SLBP, SCAF11\\
-
-Axon Guidance & GO:0007411 & 7 & ACTR2, EFNB2, KIF5C, KRAS, NCK1, TIAM1, ZIC2\\
-
-Negative regulation of protein transport & GO:0051224 & 5 & LYPLA1, LILRB1, CYLD, RHBDF2, DYRK2\\
-
-Activation of protein kinase activity & GO:0032147 & 5 & TOM1L1, KRAS, PDPK1, PRKACB, BMP2\\
-\hline
-\end{tabularx}
-  \label{tab:under}
-\end{tableminipage}
-\end{table*}
-
-\newpage
- 
-
-\begin{table*}[htbp]
-\centering
-\caption{\bf Overexpressed Genes}
-\begin{tableminipage}{\textwidth}
-\begin{tabularx}{\textwidth}{m{3cm}m{3.5cm}m{1.2cm}m{9.2cm}}
-\hline
-Biological Processes & GOBPID terms & nº genes & Genes included\footnote{Genes can overlap between GO terms.} \\
-\hline
-
-Metabolic Processes & GO:1903050  GO:0042180  GO:0045862  GO:0034655  GO:0005996  GO:0006066  GO:0044265  GO:0043085, GO:0043170 & 82 &  RPP30, ASB1, RTCB, ZNF397, NRBP1, U2AF1, PIGC,  CYR61,  FUCA1, CFH, FBXW7, PCMTD1, PSMD4, CCL5, MAN1B1, PRMT1, MYDGF, COL12A1, SEC31A, PSMC1, DRG1, RPL27A, ATG10, ZNF554, PSMD3, APOL2, TRAPPC2, GSTP1, CYR61,  PMVK, WDR46, FUCA1, CCNB1IP1, BAX, DIS3, STX12, ZNF426, APOL3, SLC35D2, PTGER3, SLC35B4, CTNNB1, RETSAT, RPS9, POLR3GL, RGS4,  FBXW7, SAMD4B, NPY1R, EIF6, USP7, USP7 , INPPL1, TRIP6, PPAP2A,  SEC31A, LIG4, POLR3C, ZCCHC11, ATF5, MFAP4, TOB2, OGT,  PDE10A,TIMM17A, OSR2, ZBTB26, CCS, ZNF791, PIN1, NUDT4, CTSD, DPH5, COPS6, CCL8, RPE65, SNF8, ZNF496,  MAN1B1, OBFC1, APOBEC3F, RPA2\\
-
-Cell structure organization & GO:0043062, GO:0044419, GO:0051234, GO:0051640 & 54 & APOL2, NUDT4, CALU, SLC39A7, CCL8, COL12A1, USP7, EIF6, TMED9, ECM2, BAX, CYR61, ABI3BP, ATG10, CCS, APOL3, SEC31A, ANTXR2, TRAPPC2, CCL5, TRIP6, HNMT, SLC35B4, INPPL1, TIMM17A, TMEM63A, NRBP1, COPS6, PSMC1, SNF8, FBXW7, HOMER3, MCOLN2, STX12, PTGER3, SYTL5, PSMD3, SNCAIP, PSMD4, RPL27A, CTNNB1, CTSD, RPS9, PEX16, RIMS4, WDR46, U2AF1, SLC26A7, ARF5, LIG4, SLC35D2, MFAP4, APOBEC3F\\
-
-Transport and Homeostasis & GO:0006887, GO:0016482, GO:0006816, GO:0072511, GO:0060249,  GO:0051650, GO:0044765 & 40 & SLC35B4, TMEM63A, U2AF1, HOMER3, SLC39A7, MCOLN2, WDR46, OBFC1, SLC26A7, CCS  , TMED9, EIF6, COPA, NRBP1, TIMM17A, APOL2, CALU, SYTL5, NUDT4, SLC35D2, SNCAIP, SNF8, SEC31A, RPL27A, BAX, SYTL5  TIMM17A, STX12, RPS9, CCL5, APOL3, HNMT,  CTNNB1, CCL8, TRAPPC2, TRIP6, RPA2, RPE65, RIMS4, PEX16, PTGER3\\
-
-DNA \& Protein Modification & GO:1903322, GO:0032259, GO:0031400, GO:0006605, GO:0032446, GO:0051338 & 30 & ATG10, SNF8, RPS9, BAX, TIMM17A, PRMT1, PIN1, OGT, PSMD4, FBXW7, PSMC1, HNMT, RPL27A, DPH5, CYR61, GSTP1,  PCMTD1, PSMD3,  CTNNB1, ASB1, PEX16, SEC31A, PIN1, RGS4, MYDGF, TRIP6, HOMER3, CCL5 , WDR46, CCNB1IP1\\
-
-Immune Response \& Inflamation & GO:0002478, GO:0019882, GO:0016032, GO:0001817, GO:0006954  & 27 & CFH, PSMD3, GSTP1, FBXW7, RPS9,  COPS6, PSMC1, POLR3GL,  APOL2, ASB1, SNF8, APOBEC3F, PSMD4, CTSD, BAX, ZCCHC11, RPL27A,  POLR3C, LIG4, PTGER3, APOL3, USP7, PIN1, SEC31A, CTNNB1, CCL8, CCL5\\
-
-Negative regulation of apoptosis \& cell death & GO:0030111, GO:0060548, GO:0043066  & 13 & MYDGF, CYR61, WIF1, CCL5, PSMC1,  ATF5, BAX, PSMD3, CTNNB1, GSTP1, PSMD4, LIG4, ATF5\\
-
-\hline
-\end{tabularx}
-  \label{tab:over}
-\end{tableminipage}
-\end{table*}
 
 \end{document}
