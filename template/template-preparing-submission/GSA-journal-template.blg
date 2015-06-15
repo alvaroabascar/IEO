@@ -3,10 +3,6 @@ Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
 The top-level auxiliary file: GSA-journal-template.aux
 The style file: genetics.bst
 Database file #1: example-bibliography.bib
-Repeated entry---line 212 of file example-bibliography.bib
- : @article{Murat2008
- :                   ,
-I'm skipping whatever remains of this entry
 Warning--empty journal in Bleeker2012
 Warning--empty school in Bolstad2004
 Warning--empty journal in Borst2012
@@ -52,4 +48,4 @@ warning$ -- 4
 while$ -- 105
 width$ -- 0
 write$ -- 240
-(There was 1 error message)
+(There were 4 warnings)
